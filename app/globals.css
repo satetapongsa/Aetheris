@@ -1,18 +1,14 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import "tailwindcss";
 
 :root {
   color-scheme: dark;
-  --bg: #090a0d;
-  --panel: #101216;
-  --line: #22252c;
-  --muted: #9497a1;
-  --text: #f1f2f5;
-  --accent: #d2f36b;
-}
-
-* {
-  box-sizing: border-box;
+  --bg: #0d0d0d;
+  --panel: #171717;
+  --line: #262626;
+  --muted: #8e8e8e;
+  --text: #ececec;
+  --accent: #ffffff;
 }
 
 body {
@@ -123,7 +119,7 @@ button {
 }
 
 .prose blockquote {
-  border-left: 3px solid #d2f36b;
+  border-left: 3px solid #3b3e4a;
   padding-left: 10px;
   margin: 0.5rem 0;
   color: #9ea0aa;

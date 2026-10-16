@@ -25,22 +25,12 @@ import {
   MoreHorizontal,
   Clock,
   Zap,
-  RotateCcw,
-  ThumbsUp,
-  ThumbsDown,
   Download,
-  Share2,
   Sparkles,
-  BookOpen,
   FileText,
-  CheckCircle2,
-  ChevronRight,
   X,
-  AlertCircle,
-  Paperclip,
   Brain,
   ChevronUp,
-  FileCode,
   ArrowDown,
   Pencil,
 } from 'lucide-react';
@@ -179,8 +169,8 @@ function CodeBlock({ node, inline, className, children, ...props }: any) {
           >
             {copied ? (
               <>
-                <Check size={12} className="text-[#d2f36b]" />
-                <span className="text-[#d2f36b]">Copied</span>
+                <Check size={12} className="text-white" />
+                <span className="text-white">Copied</span>
               </>
             ) : (
               <>
@@ -281,6 +271,13 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
     bottom.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto' });
   };
 
+  // Auto-collapse sidebar on mobile screens on initial mount
+  useEffect(() => {
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setSidebar(false);
+    }
+  }, []);
+
   // Load OP mode from localStorage if previously unlocked
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -367,6 +364,9 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
       if (activeRef.current === id) {
         setChatLoading(false);
       }
+      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        setSidebar(false);
+      }
     }
   }
 
@@ -378,6 +378,9 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
     setChatLoading(false);
     setInput('');
     setAttachments([]);
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+      setSidebar(false);
+    }
   }
 
   // Delete chat permanently from DB and state
@@ -765,25 +768,10 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
     setOpenThinking((prev) => ({ ...prev, [msgId]: !prev[msgId] }));
   }
 
-  // Quota calculation & dynamic progressive colors
+  // Quota calculation
   const quotaPercent = Math.min(100, Math.round((usage.used / usage.limit) * 100));
   const remainingPercent = Math.max(0, 100 - quotaPercent);
   const isQuotaExceeded = user.role !== 'ADMIN' && usage.used + 1 > usage.limit;
-
-  // Progressive color based on Remaining quota: Green (>50%) -> Yellow (25-50%) -> Orange (10-25%) -> Red (<10%)
-  const getRingColor = () => {
-    if (isQuotaExceeded || remainingPercent <= 10) return 'text-rose-500';
-    if (remainingPercent <= 25) return 'text-orange-400';
-    if (remainingPercent <= 50) return 'text-yellow-400';
-    return 'text-[#46a758]';
-  };
-
-  const getNumberColor = () => {
-    if (isQuotaExceeded || remainingPercent <= 10) return 'text-rose-400';
-    if (remainingPercent <= 25) return 'text-orange-300';
-    if (remainingPercent <= 50) return 'text-yellow-300';
-    return 'text-white';
-  };
 
   return (
     <div className="flex h-dvh overflow-hidden bg-[#0b0c0f]">
@@ -793,7 +781,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
           {/* Header */}
           <div className="flex h-[68px] items-center justify-between px-5">
             <div className="flex items-center gap-2">
-              <span className="text-xl text-[#d2f36b]">✳</span>
+              <span className="text-xl text-white">✳</span>
               <span className="font-semibold tracking-wide text-white">Zyntra</span>
             </div>
             <button
@@ -807,9 +795,9 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
           {/* New Chat Button */}
           <button
             onClick={newChat}
-            className="mx-3 mb-4 flex items-center gap-2 rounded-xl border border-[#2d3037] px-3.5 py-2.5 text-sm font-medium transition hover:border-[#494d3b] hover:bg-[#181a1f]"
+            className="mx-3 mb-4 flex items-center gap-2 rounded-xl border border-[#2d3037] px-3.5 py-2.5 text-sm font-medium transition hover:border-[#424552] hover:bg-[#181a1f]"
           >
-            <Plus size={16} className="text-[#d2f36b]" /> New chat
+            <Plus size={16} className="text-white" /> New chat
             <span className="ml-auto text-xs text-[#777983]">⌘ K</span>
           </button>
 
@@ -844,7 +832,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                   <span className="mr-2 inline-block align-middle text-[#858791]">
                     <MessageSquare size={14} />
                   </span>
-                  {c.pinned && <Pin size={12} className="mr-1 inline text-[#d2f36b]" />}
+                  {c.pinned && <Pin size={12} className="mr-1 inline text-white" />}
                   {c.title || 'New chat'}
                 </button>
                 <div className="hidden pr-2 group-hover:flex items-center gap-0.5">
@@ -854,7 +842,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                       e.stopPropagation();
                       exportChatMarkdown(c.id);
                     }}
-                    className="p-1 text-[#8a8d96] hover:text-[#d2f36b] transition"
+                    className="p-1 text-[#8a8d96] hover:text-white transition"
                   >
                     <Download size={13} />
                   </button>
@@ -868,7 +856,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                   <button
                     title="Favorite"
                     onClick={() => updateChat(c.id, { favorite: !c.favorite })}
-                    className="p-1 text-[#8a8d96] hover:text-[#d2f36b] transition"
+                    className="p-1 text-[#8a8d96] hover:text-amber-300 transition"
                   >
                     <Star size={13} fill={c.favorite ? 'currentColor' : 'none'} />
                   </button>
@@ -887,14 +875,14 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
             ))}
           </div>
 
-          {/* Five Hour Limit Remaining Card (matching screenshot style) */}
+          {/* Five Hour Limit Remaining Card (with clean white quota bar) */}
           <div className="mx-3 mb-2 rounded-xl border border-[#23252b] bg-[#14151a] p-3 transition hover:border-[#2f323a]">
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xs font-medium text-[#e2e4e9] truncate">Five Hour Limit Remaining</span>
                   {usage.limit >= 1000 && (
-                    <span className="rounded bg-[#d2f36b]/15 px-1 py-0.2 text-[9px] font-semibold text-[#d2f36b]">
+                    <span className="rounded bg-white/10 px-1 py-0.2 text-[9px] font-semibold text-white">
                       OP
                     </span>
                   )}
@@ -907,37 +895,28 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
               </div>
 
               <div className="flex items-center gap-2 shrink-0">
-                <span className={`text-xs font-semibold ${getNumberColor()} transition-colors duration-300`}>
+                <span className="text-xs font-semibold text-white">
                   {remainingPercent}%
                 </span>
-                <div className="relative flex h-6 w-6 items-center justify-center">
-                  <svg className="h-6 w-6 -rotate-90 transform" viewBox="0 0 36 36">
-                    <path
-                      className="text-[#25272e]"
-                      strokeWidth="4"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                    <path
-                      className={`${getRingColor()} transition-all duration-500`}
-                      strokeDasharray={`${remainingPercent}, 100`}
-                      strokeWidth="4"
-                      strokeLinecap="round"
-                      stroke="currentColor"
-                      fill="none"
-                      d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                    />
-                  </svg>
-                </div>
               </div>
+            </div>
+
+            {/* Clean White Quota Progress Bar (แท่งหลอดโควตาสีขาว) */}
+            <div className="mt-2.5 h-1.5 w-full overflow-hidden rounded-full bg-[#20222a]">
+              <div
+                className="h-full rounded-full bg-white transition-all duration-500 ease-out"
+                style={{ width: `${remainingPercent}%` }}
+              />
             </div>
           </div>
 
           {/* Footer User Menu */}
           <div className="border-t border-[#23252b] p-3">
             <button
-              onClick={() => setPrefs(true)}
+              onClick={() => {
+                setPrefs(true);
+                if (typeof window !== 'undefined' && window.innerWidth < 768) setSidebar(false);
+              }}
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-[#b7b8bf] hover:bg-[#1c1e23]"
             >
               <Settings size={17} /> Settings
@@ -954,7 +933,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
               onClick={() => setMenu(!menu)}
               className="mt-1 flex w-full items-center gap-3 rounded-lg p-2 hover:bg-[#1c1e23]"
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#34372a] text-sm font-semibold text-[#d2f36b]">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#272a33] text-sm font-semibold text-white">
                 {user.name[0]?.toUpperCase()}
               </div>
               <span className="min-w-0 flex-1 text-left">
@@ -973,6 +952,15 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
             )}
           </div>
         </aside>
+      )}
+
+      {/* Mobile Backdrop when Sidebar is Open */}
+      {sidebar && (
+        <div
+          onClick={() => setSidebar(false)}
+          className="fixed inset-0 z-10 bg-black/70 backdrop-blur-sm md:hidden animate-in fade-in duration-200"
+          aria-hidden="true"
+        />
       )}
 
       {/* Main Chat Area */}
@@ -998,7 +986,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
               className="flex items-center gap-1.5 rounded-lg border border-[#262831] bg-[#14151b] px-2.5 py-1.5 text-xs text-[#c4c6cf] hover:border-[#383a46] hover:bg-[#1a1c24] hover:text-white transition"
               title="Enterprise Prompt Library"
             >
-              <Sparkles size={13} className="text-[#d2f36b]" />
+              <Sparkles size={13} className="text-[#a0a4b5]" />
               <span className="hidden sm:inline">Prompt Library</span>
             </button>
             <button
@@ -1007,7 +995,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
               className="flex items-center gap-1.5 rounded-lg border border-[#2d303a] bg-[#14151b] px-3 py-1.5 text-xs font-medium text-[#c4c6cf] hover:border-[#383a46] hover:bg-[#1a1c24] hover:text-white transition disabled:opacity-40 disabled:cursor-not-allowed shadow-sm"
               title="Export conversation as Markdown (.md)"
             >
-              <Download size={13} className="text-[#d2f36b]" />
+              <Download size={13} className="text-[#a0a4b5]" />
               <span>Export</span>
             </button>
           </div>
@@ -1043,7 +1031,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
               </div>
             ) : messages.length === 0 ? (
               <div className="fade-in flex min-h-[55vh] flex-col items-center justify-center text-center">
-                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#34372a] bg-[#1b1e14] text-3xl text-[#d2f36b] shadow-[0_0_24px_rgba(210,243,107,0.12)]">
+                <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-[#2a2d36] bg-[#15161c] text-3xl text-white shadow-[0_0_24px_rgba(255,255,255,0.06)]">
                   ✳
                 </div>
                 <h1 className="text-3xl font-semibold tracking-tight text-white">What can I help with?</h1>
@@ -1055,7 +1043,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                     <button
                       key={s}
                       onClick={() => send(s)}
-                      className="rounded-xl border border-[#25272d] bg-[#101115] p-4 text-left text-sm text-[#c6c7ce] transition hover:border-[#494d3b] hover:bg-[#141610]"
+                      className="rounded-xl border border-[#25272d] bg-[#101115] p-4 text-left text-sm text-[#c6c7ce] transition hover:border-[#3c3f4e] hover:bg-[#16171d]"
                     >
                       {s}
                       <span className="mt-2 block text-xs text-[#777983]">Explore with Zyntra ↗</span>
@@ -1086,10 +1074,10 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                           className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-xs font-semibold shadow-sm ${
                             m.role === 'USER'
                               ? 'bg-gradient-to-tr from-[#252830] to-[#343844] text-[#e8eaef] border border-[#3e4250]'
-                              : 'bg-[#151811] text-[#d2f36b] border border-[#2e3322]'
+                              : 'bg-[#15161c] text-white border border-[#272932]'
                           }`}
                         >
-                          {m.role === 'USER' ? user.name[0]?.toUpperCase() : <Sparkles size={14} className="text-[#d2f36b]" />}
+                          {m.role === 'USER' ? user.name[0]?.toUpperCase() : <Sparkles size={14} className="text-[#a0a4b5]" />}
                         </div>
 
                         {/* Message Bubble Body */}
@@ -1119,7 +1107,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                                   setEditInput(m.content);
                                 }}
                                 title="แก้ไขข้อความ"
-                                className="group relative flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-[#8e929f] transition hover:bg-[#282a35] hover:text-[#d2f36b]"
+                                className="group relative flex items-center gap-1 rounded-md px-1.5 py-0.5 text-[11px] text-[#8e929f] transition hover:bg-[#282a35] hover:text-white"
                               >
                                 <Pencil size={12} className="transition group-hover:scale-110" />
                                 <span className="hidden sm:inline">แก้ไขข้อความ</span>
@@ -1133,9 +1121,9 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                                 <div className="flex items-center gap-2.5 py-2.5">
                                   <span className="text-xs text-[#9699a3]">Synthesizing response</span>
                                   <span className="flex gap-1.5">
-                                    <i className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#d2f36b]" />
-                                    <i className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#d2f36b] [animation-delay:150ms]" />
-                                    <i className="h-1.5 w-1.5 animate-bounce rounded-full bg-[#d2f36b] [animation-delay:300ms]" />
+                                    <i className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/70" />
+                                    <i className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/70 [animation-delay:150ms]" />
+                                    <i className="h-1.5 w-1.5 animate-bounce rounded-full bg-white/70 [animation-delay:300ms]" />
                                   </span>
                                 </div>
                               );
@@ -1149,25 +1137,25 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                                 <div className="space-y-3">
                                   {/* Thinking Process Accordion Drawer */}
                                   {thinking && (
-                                    <div className="overflow-hidden rounded-xl border border-[#2b2f21] bg-[#10130d] text-xs transition">
+                                    <div className="overflow-hidden rounded-xl border border-[#262831] bg-[#121318] text-xs transition">
                                       <button
                                         type="button"
                                         onClick={() => toggleThinking(m.id)}
-                                        className="flex w-full items-center justify-between px-3.5 py-2 font-medium text-[#c4de79] hover:bg-[#161a12] transition"
+                                        className="flex w-full items-center justify-between px-3.5 py-2 font-medium text-[#c4c6cf] hover:bg-[#181a20] transition"
                                       >
                                         <div className="flex items-center gap-2">
-                                          <Brain size={14} className="text-[#d2f36b]" />
+                                          <Brain size={14} className="text-[#a0a4b5]" />
                                           <span>
                                             Thinking Process {!isThinkingFinished && '(Analyzing...)'}
                                           </span>
                                         </div>
-                                        <div className="flex items-center gap-1.5 text-[#8f9a6e]">
+                                        <div className="flex items-center gap-1.5 text-[#7f8290]">
                                           <span>{isExpanded ? 'Hide' : 'Show steps'}</span>
                                           {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
                                         </div>
                                       </button>
                                       {isExpanded && (
-                                        <div className="border-t border-[#23271b] px-3.5 py-2.5 font-mono text-[11px] leading-relaxed text-[#a4af8a] whitespace-pre-wrap bg-[#0c0e09]/70">
+                                        <div className="border-t border-[#20222a] px-3.5 py-2.5 font-mono text-[11px] leading-relaxed text-[#9598a5] whitespace-pre-wrap bg-[#0c0d11]">
                                           {thinking}
                                         </div>
                                       )}
@@ -1188,7 +1176,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                                     </div>
                                   ) : !isThinkingFinished ? (
                                     <div className="flex items-center gap-2 py-1 text-xs text-[#9699a3]">
-                                      <Brain size={13} className="text-[#d2f36b] animate-pulse" />
+                                      <Brain size={13} className="text-[#a0a4b5] animate-pulse" />
                                       <span>Reasoning in progress...</span>
                                     </div>
                                   ) : null}
@@ -1216,7 +1204,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                                       }
                                     }}
                                     rows={Math.min(6, Math.max(2, editInput.split('\n').length))}
-                                    className="w-full rounded-xl border border-[#3b3e4f] bg-[#14151b] p-3 text-[14px] text-white outline-none focus:border-[#d2f36b] transition"
+                                    className="w-full rounded-xl border border-[#3b3e4f] bg-[#14151b] p-3 text-[14px] text-white outline-none focus:border-[#525565] transition"
                                     placeholder="แก้ไขคำถาม..."
                                     autoFocus
                                   />
@@ -1238,7 +1226,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                                         }
                                       }}
                                       disabled={loading || !editInput.trim()}
-                                      className="rounded-lg bg-[#d2f36b] px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-[#bce055] transition disabled:opacity-50"
+                                      className="rounded-lg bg-white px-3.5 py-1.5 text-xs font-semibold text-black hover:bg-neutral-200 transition disabled:opacity-50"
                                     >
                                       บันทึกและส่ง
                                     </button>
@@ -1267,12 +1255,12 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                             <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-[#1d1f27] pt-2.5">
                               {m.responseTime && (
                                 <span className="inline-flex items-center gap-1 rounded-md border border-[#232530] bg-[#121318] px-2 py-0.5 text-[11px] text-[#8e929f]">
-                                  <Clock size={11} className="text-[#d2f36b]" />
+                                  <Clock size={11} className="text-[#a0a4b5]" />
                                   {m.responseTime}
                                 </span>
                               )}
                               <span className="inline-flex items-center gap-1 rounded-md border border-[#232530] bg-[#121318] px-2 py-0.5 text-[11px] text-[#8e929f]">
-                                <Zap size={11} className="text-[#d2f36b]" />
+                                <Zap size={11} className="text-[#a0a4b5]" />
                                 {typeof m.tokens === 'number'
                                   ? `${Math.max(1, Math.round((m.tokens / usage.limit) * 100))}%`
                                   : '2%'}
@@ -1287,8 +1275,8 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                                 >
                                   {copiedId === m.id ? (
                                     <>
-                                      <Check size={12} className="text-[#d2f36b]" />
-                                      <span className="text-[#d2f36b]">Copied</span>
+                                      <Check size={12} className="text-white" />
+                                      <span className="text-white">Copied</span>
                                     </>
                                   ) : (
                                     <>
@@ -1334,7 +1322,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
               className={`rounded-2xl border bg-[#141519] px-4 pt-3 shadow-lg transition ${
                 isQuotaExceeded
                   ? 'border-rose-900/60 opacity-80'
-                  : 'border-[#30323a] focus-within:border-[#505342]'
+                  : 'border-[#2d303a] focus-within:border-[#525252]'
               }`}
             >
               {/* Hidden file input */}
@@ -1353,15 +1341,15 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                   {attachments.map((att, idx) => (
                     <div
                       key={att.name + idx}
-                      className="flex items-center gap-1.5 rounded-lg border border-[#303426] bg-[#1a1f13] px-2.5 py-1 text-xs text-[#d2f36b]"
+                      className="flex items-center gap-1.5 rounded-lg border border-[#2c2f3a] bg-[#1a1c24] px-2.5 py-1 text-xs text-[#e2e4ea]"
                     >
-                      <FileText size={12} />
+                      <FileText size={12} className="text-[#a0a4b5]" />
                       <span className="font-medium max-w-[160px] truncate">{att.name}</span>
-                      <span className="text-[10px] text-[#9baa6e]">({att.size})</span>
+                      <span className="text-[10px] text-[#8e919f]">({att.size})</span>
                       <button
                         type="button"
                         onClick={() => removeAttachment(idx)}
-                        className="ml-1 text-[#9baa6e] hover:text-white"
+                        className="ml-1 text-[#8e919f] hover:text-white"
                       >
                         <X size={12} />
                       </button>
@@ -1421,7 +1409,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                 ) : (
                   <button
                     disabled={(!input.trim() && attachments.length === 0) || loading}
-                    className="flex items-center justify-center rounded-lg bg-[#d2f36b] p-2 text-[#12140c] transition disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="flex items-center justify-center rounded-lg bg-white p-2 text-black transition hover:bg-neutral-200 disabled:opacity-30 disabled:cursor-not-allowed"
                   >
                     <Send size={15} />
                   </button>
@@ -1530,7 +1518,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
           >
             <div className="mb-4 flex items-center justify-between border-b border-[#23252c] pb-3">
               <div className="flex items-center gap-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1c2211] text-[#d2f36b] border border-[#2c3417]">
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#1e2029] text-white border border-[#2d303d]">
                   <Sparkles size={16} />
                 </div>
                 <div>
@@ -1551,10 +1539,10 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
               {enterprisePresets.map((preset) => (
                 <div
                   key={preset.title}
-                  className="rounded-xl border border-[#24262f] bg-[#0d0e12] p-4 transition hover:border-[#3d4230] hover:bg-[#111317]"
+                  className="rounded-xl border border-[#24262f] bg-[#0d0e12] p-4 transition hover:border-[#383b48] hover:bg-[#13141a]"
                 >
                   <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#d2f36b]">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-[#a0a4b5]">
                       {preset.category}
                     </span>
                     <button
@@ -1562,7 +1550,7 @@ export default function ChatApp({ user, initialChats, settings, initialUsage }: 
                         setInput(preset.prompt);
                         setShowPresets(false);
                       }}
-                      className="inline-flex items-center gap-1 rounded-md bg-[#1f2216] px-2.5 py-1 text-xs font-medium text-[#d2f36b] hover:bg-[#283015] border border-[#343e1d] transition"
+                      className="inline-flex items-center gap-1 rounded-md bg-[#1f222b] px-2.5 py-1 text-xs font-medium text-white hover:bg-[#282c38] border border-[#303444] transition"
                     >
                       Use Template ↗
                     </button>
