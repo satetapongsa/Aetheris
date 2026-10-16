@@ -1,11 +1,31 @@
-node_modules
-.next
-.env
-.env.*
-!.env.example
-coverage
+# Logs
+logs
 *.log
-*.tsbuildinfo
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Environment variables
+.env
+.env*.local
+
+# Design reference assets
+stitch_clean_dark_ai_chatbot/
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
 .DS_Store
-Thumbs.db
-.vercel
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

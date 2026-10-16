@@ -1,1 +1,0 @@
-import AdminPanel from '@/components/admin-panel';import{currentUser}from'@/lib/auth';import{redirect}from'next/navigation';export default async function Admin(){const u=await currentUser();if(!u||u.role!=='ADMIN')redirect('/');return <AdminPanel/>}
