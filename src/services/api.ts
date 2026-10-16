@@ -7,6 +7,32 @@ function getAuthHeader(): Record<string, string> {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
+async function parseJsonResponse<T = any>(res: Response, fallbackErrorMsg: string): Promise<T> {
+  const contentType = res.headers.get('content-type') || '';
+  if (contentType.includes('application/json')) {
+    const data = await res.json();
+    if (!res.ok) {
+      throw new Error(data.error || data.message || fallbackErrorMsg);
+    }
+    return data as T;
+  }
+
+  const rawText = await res.text();
+  if (!res.ok) {
+    if (rawText.includes('A server error') || rawText.includes('FUNCTION_INVOCATION_FAILED')) {
+      throw new Error('ระบบเซิร์ฟเวอร์หลังบ้านขัดข้องชั่วคราว กรุณาลองใหม่อีกครั้ง');
+    }
+    const cleanText = rawText.replace(/<[^>]*>?/gm, '').trim().slice(0, 150);
+    throw new Error(cleanText || fallbackErrorMsg);
+  }
+
+  try {
+    return JSON.parse(rawText) as T;
+  } catch {
+    throw new Error(fallbackErrorMsg);
+  }
+}
+
 export const authService = {
   async register(email: string, password: string, name?: string): Promise<{ token: string; user: User }> {
     const res = await fetch(`${API_BASE}/auth/register`, {
@@ -14,10 +40,7 @@ export const authService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password, name })
     });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Failed to register');
-    }
+    const data = await parseJsonResponse<{ token: string; user: User }>(res, 'Failed to register');
     localStorage.setItem('aetheris_token', data.token);
     return data;
   },
@@ -28,10 +51,7 @@ export const authService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password })
     });
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Failed to login');
-    }
+    const data = await parseJsonResponse<{ token: string; user: User }>(res, 'Failed to login');
     localStorage.setItem('aetheris_token', data.token);
     return data;
   },
@@ -48,7 +68,7 @@ export const authService = {
         localStorage.removeItem('aetheris_token');
         return null;
       }
-      const data = await res.json();
+      const data = await parseJsonResponse<{ user: User }>(res, 'Failed to load user');
       return data.user;
     } catch {
       return null;
@@ -93,11 +113,7 @@ export const chatService = {
       })
     });
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.error || 'Chat generation failed');
-    }
-
+    const data = await parseJsonResponse<{ message: Message }>(res, 'Chat generation failed');
     return data.message;
   }
 };
@@ -106,7 +122,7 @@ export const healthService = {
   async checkHealth() {
     try {
       const res = await fetch(`${API_BASE}/health`);
-      return await res.json();
+      return await parseJsonResponse(res, 'Offline');
     } catch (err) {
       return { status: 'offline', error: err };
     }

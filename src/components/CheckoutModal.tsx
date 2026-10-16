@@ -175,19 +175,19 @@ export const CheckoutModal: React.FC<CheckoutModalProps> = ({
                 <form className="payment-form" onSubmit={(e) => e.preventDefault()}>
                   <div className="form-group">
                     <label className="form-label">ชื่อบนบัตร</label>
-                    <input type="text" className="form-input form-input-plain" defaultValue="ALEX MERCER" required />
+                    <input type="text" className="form-input form-input-plain" placeholder="ชื่อ - นามสกุล บนบัตร" required />
                   </div>
                   <div className="form-group">
                     <label className="form-label">หมายเลขบัตร (Card Number)</label>
                     <div className="input-with-icon">
                       <span className="material-symbols-outlined input-icon">credit_card</span>
-                      <input type="text" className="form-input" defaultValue="4242 •••• •••• 4242" maxLength={19} required />
+                      <input type="text" className="form-input" placeholder="4242 •••• •••• 4242" maxLength={19} required />
                     </div>
                   </div>
                   <div className="form-row-2">
                     <div className="form-group">
                       <label className="form-label">วันหมดอายุ (MM/YY)</label>
-                      <input type="text" className="form-input form-input-plain" defaultValue="12/28" maxLength={5} required />
+                      <input type="text" className="form-input form-input-plain" placeholder="MM/YY" maxLength={5} required />
                     </div>
                     <div className="form-group">
                       <label className="form-label">CVC / CVV</label>

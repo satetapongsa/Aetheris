@@ -66,16 +66,6 @@ const memoryStore = {
   messages: [] as DBMessage[]
 };
 
-// Seed default user into memory store
-memoryStore.users.set('alex.mercer@neural.io', {
-  id: 'usr-default',
-  email: 'alex.mercer@neural.io',
-  name: 'Alex Mercer',
-  password_hash: '$2a$10$wT0E89Vz1Y6aG9U0f2m2b.nJkK9kH4M1FqL3jD9kK8v1g1b1h1j1e', // bcrypt hash for 'password123'
-  tier: 'PRO',
-  created_at: new Date().toISOString()
-});
-
 /**
  * Initialize Schema on Neon DB
  */
