@@ -18,15 +18,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [topP, setTopP] = useState(parameters.topP);
   const [maxTokens, setMaxTokens] = useState(parameters.maxTokens);
   const [systemPrompt, setSystemPrompt] = useState(parameters.systemPrompt);
+  const [apiKey, setApiKey] = useState(parameters.apiKey || localStorage.getItem('aetheris_api_key') || '');
 
   if (!isOpen) return null;
 
   const handleSave = () => {
+    const trimmedKey = apiKey.trim();
+    if (trimmedKey) {
+      localStorage.setItem('aetheris_api_key', trimmedKey);
+    } else {
+      localStorage.removeItem('aetheris_api_key');
+    }
+
     onSave({
       temperature: temp,
       topP,
       maxTokens,
-      systemPrompt
+      systemPrompt,
+      apiKey: trimmedKey
     });
     onClose();
   };
@@ -101,6 +110,23 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               value={maxTokens}
               className="slider-input"
               onChange={(e) => setMaxTokens(parseInt(e.target.value, 10))}
+            />
+          </div>
+
+          {/* DeepSeek API Key */}
+          <div className="setting-item">
+            <div className="setting-label-row">
+              <div>
+                <label className="setting-name">DeepSeek API Key (Backend Engine)</label>
+                <p className="setting-desc">เชื่อมต่อ API Key ตัวเดิมของคุณเพื่อยิงขอคำตอบจาก DeepSeek โดยตรง (หรือกำหนดใน .env / Vercel)</p>
+              </div>
+            </div>
+            <input
+              type="password"
+              className="form-input form-input-plain"
+              placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
             />
           </div>
 

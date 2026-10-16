@@ -71,17 +71,25 @@ export const chatService = {
       systemPrompt?: string;
       sessionTitle?: string;
       sessionTopic?: string;
+      apiKey?: string;
     }
   ): Promise<Message> {
+    const savedApiKey = options.apiKey || localStorage.getItem('aetheris_api_key') || '';
+    const customHeaders: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...getAuthHeader()
+    };
+    if (savedApiKey) {
+      customHeaders['x-api-key'] = savedApiKey;
+    }
+
     const res = await fetch(`${API_BASE}/chat`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        ...getAuthHeader()
-      },
+      headers: customHeaders,
       body: JSON.stringify({
         prompt,
-        ...options
+        ...options,
+        apiKey: savedApiKey
       })
     });
 

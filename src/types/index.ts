@@ -56,4 +56,5 @@ export interface ModelParameterState {
   topP: number;
   maxTokens: number;
   systemPrompt: string;
+  apiKey?: string;
 }

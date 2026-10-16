@@ -16,7 +16,7 @@ import type { ChatSession, Message, ModelId, ModelParameterState, ToastMessage, 
 export function App() {
   // Session & User State
   const [sessions, setSessions] = useState<ChatSession[]>(INITIAL_SESSIONS);
-  const [activeSessionId, setActiveSessionId] = useState<string>('sess-react19');
+  const [activeSessionId, setActiveSessionId] = useState<string>(INITIAL_SESSIONS[0]?.id || 'sess-new');
   const [currentUser, setCurrentUser] = useState<User>(INITIAL_USER);
 
   // Layout & Navigation State
@@ -52,7 +52,8 @@ export function App() {
     temperature: 0.7,
     topP: 0.95,
     maxTokens: 8192,
-    systemPrompt: ''
+    systemPrompt: '',
+    apiKey: localStorage.getItem('aetheris_api_key') || ''
   });
 
   // Toasts
@@ -116,28 +117,12 @@ export function App() {
       topic: 'บทสนทนาใหม่กับ Aetheris AI',
       category: 'today',
       icon: 'chat_bubble',
-      messages: [
-        {
-          sender: 'ai',
-          modelName: 'Aetheris 2.5 Pro Neural',
-          duration: 'พร้อมให้บริการ',
-          thoughtSummary: 'Aetheris Neural Engine พร้อมประมวลผล',
-          thoughtDetails: 'ระบบเชื่อมต่อคลัสเตอร์ TPU v5p ความเร็วสูง พร้อมรองรับคำสั่งภาษาไทยและโค้ดโปรแกรมมิ่ง',
-          paragraphs: [
-            'สวัสดีครับ! ผมคือ <strong>Aetheris AI (v2.5 Pro Neural)</strong> พร้อมช่วยคุณวิเคราะห์โค้ด ออกแบบสถาปัตยกรรมระบบ แก้ไขบั๊ก หรือค้นคว้าข้อมูลเชิงลึก',
-            'คุณสามารถพิมพ์คำถาม แนบไฟล์ หรือเปิดใช้งาน <em>Web Search</em> และ <em>Deep Reasoning</em> ได้จากแถบเครื่องมือด้านล่างครับ'
-          ],
-          suggestions: [
-            'วิเคราะห์และรีวิวโค้ด React 19 State Management',
-            'ออกแบบ REST API ด้วย Node.js และ Clean Architecture',
-            'อธิบายขั้นตอนการทำงานของ Quantum Algorithms'
-          ]
-        }
-      ]
+      messages: [] // Clean empty messages!
     };
 
     setSessions(prev => [newSession, ...prev]);
     setActiveSessionId(newId);
+    setMobileSidebarOpen(false);
     showToast('สร้างบทสนทนาใหม่แล้ว', 'success', 'add_comment');
   };
 
@@ -165,11 +150,19 @@ export function App() {
       content: fullContent
     };
 
+    let sessionTitle = activeSession.title;
+    let sessionTopic = activeSession.topic;
+
     setSessions(prev =>
       prev.map(s => {
         if (s.id === activeSessionId) {
+          const isFirstMessage = s.messages.length === 0;
+          sessionTitle = isFirstMessage ? (text.slice(0, 28) || 'การสนทนาใหม่') : s.title;
+          sessionTopic = isFirstMessage ? (text.slice(0, 48) || 'หัวข้อการสนทนา') : s.topic;
           return {
             ...s,
+            title: sessionTitle,
+            topic: sessionTopic,
             messages: [...s.messages, userMessage]
           };
         }
@@ -177,10 +170,15 @@ export function App() {
       })
     );
 
-    triggerSimulatedAIResponse(fullContent);
+    triggerSimulatedAIResponse(fullContent, false, sessionTitle, sessionTopic);
   };
 
-  const triggerSimulatedAIResponse = async (userPrompt: string, isRetry: boolean = false) => {
+  const triggerSimulatedAIResponse = async (
+    userPrompt: string,
+    isRetry: boolean = false,
+    updatedTitle?: string,
+    updatedTopic?: string
+  ) => {
     setIsStreaming(true);
     setStreamingStatusText(
       thinkingMode
@@ -197,8 +195,9 @@ export function App() {
         temperature: parameters.temperature,
         maxTokens: parameters.maxTokens,
         systemPrompt: parameters.systemPrompt,
-        sessionTitle: activeSession.title,
-        sessionTopic: activeSession.topic
+        sessionTitle: updatedTitle || activeSession.title,
+        sessionTopic: updatedTopic || activeSession.topic,
+        apiKey: parameters.apiKey
       });
     } catch {
       // Graceful fallback to local synthesis if backend server is not running

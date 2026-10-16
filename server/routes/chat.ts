@@ -31,8 +31,11 @@ router.post('/', async (req: Request, res: Response) => {
       maxTokens,
       systemPrompt,
       sessionTitle,
-      sessionTopic
+      sessionTopic,
+      apiKey
     } = req.body;
+
+    const clientApiKey = (req.headers['x-api-key'] as string) || (typeof apiKey === 'string' ? apiKey.trim() : '');
 
     if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
       return res.status(400).json({ error: 'กรุณาระบุข้อความคำถาม (Prompt)' });
@@ -72,7 +75,8 @@ router.post('/', async (req: Request, res: Response) => {
       thinkingMode,
       temperature,
       maxTokens,
-      systemPrompt
+      systemPrompt,
+      apiKey: clientApiKey
     });
 
     // Save assistant message to Neon DB

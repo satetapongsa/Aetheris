@@ -15,10 +15,10 @@ interface TopNavProps {
   onOpenLogin: () => void;
 }
 
-const MODEL_NAMES: Record<ModelId, string> = {
-  'aetheris-2.5-pro': 'Aetheris 2.5 Pro Neural',
-  'aetheris-deep-reasoning': 'Aetheris Deep Reasoning',
-  'aetheris-fast-flash': 'Aetheris Fast Flash'
+const MODEL_NAMES: Record<ModelId, { full: string; short: string }> = {
+  'aetheris-2.5-pro': { full: 'Aetheris 2.5 Pro Neural', short: 'Aetheris 2.5 Pro' },
+  'aetheris-deep-reasoning': { full: 'Aetheris Deep Reasoning', short: 'Deep Reasoning' },
+  'aetheris-fast-flash': { full: 'Aetheris Fast Flash', short: 'Fast Flash' }
 };
 
 export const TopNav: React.FC<TopNavProps> = ({
@@ -54,6 +54,7 @@ export const TopNav: React.FC<TopNavProps> = ({
           className="btn-icon mobile-menu-btn"
           onClick={onOpenMobileSidebar}
           aria-label="Open navigation menu"
+          title="เปิดเมนู"
         >
           <span className="material-symbols-outlined">menu</span>
         </button>
@@ -67,7 +68,10 @@ export const TopNav: React.FC<TopNavProps> = ({
             aria-expanded={dropdownOpen}
           >
             <span className="model-status-dot"></span>
-            <span className="model-name-text">{MODEL_NAMES[currentModel]}</span>
+            <span className="model-name-text">
+              <span className="model-full-name">{MODEL_NAMES[currentModel].full}</span>
+              <span className="model-short-name">{MODEL_NAMES[currentModel].short}</span>
+            </span>
             <span className="material-symbols-outlined icon-chevron">expand_more</span>
           </button>
 
@@ -127,7 +131,7 @@ export const TopNav: React.FC<TopNavProps> = ({
             title="คลิกเพื่อสลับโหมดการคิด"
           >
             <span className="material-symbols-outlined text-primary">psychology</span>
-            <span>Thinking Mode: <strong>{thinkingMode ? 'Active' : 'Paused'}</strong></span>
+            <span>Thinking: <strong>{thinkingMode ? 'ON' : 'OFF'}</strong></span>
           </button>
           <div className="capability-pill">
             <span className="material-symbols-outlined text-secondary">memory</span>
@@ -145,23 +149,24 @@ export const TopNav: React.FC<TopNavProps> = ({
         <button className="btn-icon" onClick={onOpenNodes} title="Neural Graph Nodes Visualizer">
           <span className="material-symbols-outlined">hub</span>
         </button>
-        <button className="btn-icon" onClick={onOpenAnalytics} title="สถิติและการทำงาน (Performance Analytics)">
+        <button className="btn-icon desktop-only-btn" onClick={onOpenAnalytics} title="สถิติและการทำงาน (Performance Analytics)">
           <span className="material-symbols-outlined">analytics</span>
         </button>
         <div className="nav-divider"></div>
-        <button className="btn-subtle" onClick={onShareSession}>
+        <button className="btn-subtle" onClick={onShareSession} title="แชร์บทสนทนา">
           <span className="material-symbols-outlined">ios_share</span>
-          <span>แชร์บทสนทนา</span>
+          <span className="btn-label-text">แชร์</span>
         </button>
-        <button className="btn-gradient-primary" onClick={onOpenCheckout}>
+        <button className="btn-gradient-primary" onClick={onOpenCheckout} title="อัปเกรดเป็น Aetheris Pro">
           <span className="material-symbols-outlined">rocket_launch</span>
-          <span>อัปเกรด Pro</span>
+          <span className="btn-label-text">อัปเกรด Pro</span>
         </button>
-        <button className="btn-subtle" onClick={onOpenLogin} title="เข้าสู่ระบบ">
+        <button className="btn-subtle" onClick={onOpenLogin} title="บัญชีผู้ใช้งาน">
           <span className="material-symbols-outlined">person</span>
-          <span className="btn-login-label">เข้าสู่ระบบ</span>
+          <span className="btn-label-text">เข้าสู่ระบบ</span>
         </button>
       </div>
     </header>
   );
 };
+export default TopNav;

@@ -41,7 +41,7 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
     }
   }, [promptText]);
 
@@ -53,6 +53,7 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
   };
 
   const estimatedTokens = Math.max(18, Math.round(promptText.length / 3.5) + 18);
+  const canSend = promptText.trim().length > 0 || attachedFiles.length > 0;
 
   return (
     <footer className="prompt-deck-container">
@@ -65,8 +66,9 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
                 <span className="material-symbols-outlined text-primary" style={{ fontSize: '14px' }}>
                   description
                 </span>
-                <span>{f.name}</span>
+                <span className="attached-filename">{f.name}</span>
                 <button
+                  type="button"
                   className="btn-remove-attachment"
                   onClick={() => onRemoveFile(i)}
                   title="ลบไฟล์"
@@ -84,9 +86,9 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
         <div className="floating-prompt-box">
           <textarea
             ref={textareaRef}
-            className="prompt-textarea"
-            placeholder="พิมพ์คำถามหรือป้อนคำสั่งให้ Aetheris AI... (กด Enter เพื่อส่ง, Shift + Enter เพื่อขึ้นบรรทัดใหม่)"
-            rows={2}
+            className="prompt-textarea custom-scroll"
+            placeholder="พิมพ์คำถามหรือป้อนคำสั่งให้ Aetheris AI..."
+            rows={1}
             value={promptText}
             onChange={(e) => onPromptChange(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -124,7 +126,7 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
                 title="สลับการค้นหาข้อมูลบนเว็บ"
               >
                 <span className="material-symbols-outlined">public</span>
-                <span>Web Search</span>
+                <span className="tool-pill-label">Web Search</span>
               </button>
 
               {/* Deep Reasoning Toggle */}
@@ -135,7 +137,7 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
                 title="สลับโหมดคิดวิเคราะห์หลายขั้นตอน"
               >
                 <span className="material-symbols-outlined">neurology</span>
-                <span>Deep Reasoning</span>
+                <span className="tool-pill-label">Deep Reasoning</span>
               </button>
 
               {/* Voice Input */}
@@ -153,12 +155,13 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
             <div className="toolset-right">
               <div className="token-meter">
                 <span className="token-dot"></span>
-                <span>{estimatedTokens.toLocaleString()} / 200,000 tok</span>
+                <span>{estimatedTokens.toLocaleString()} tok</span>
               </div>
               <button
                 type="button"
-                className="btn-send"
+                className={`btn-send ${canSend ? 'can-send' : ''}`}
                 onClick={onSend}
+                disabled={!canSend}
                 title="ส่งข้อความ (Enter)"
                 aria-label="Send message"
               >
@@ -171,13 +174,14 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
         {/* Disclaimer Note */}
         <div className="disclaimer-row">
           <span>Aetheris AI อาจแสดงข้อมูลที่ไม่ถูกต้อง กรุณาตรวจสอบข้อมูลสำคัญ</span>
-          <span>•</span>
+          <span className="disclaimer-divider">•</span>
           <span className="security-chip">
             <span className="material-symbols-outlined text-success">verified_user</span>
-            <span>SOC2 Type II Certified &amp; Encrypted</span>
+            <span>SOC2 Type II Encrypted</span>
           </span>
         </div>
       </div>
     </footer>
   );
 };
+export default PromptDeck;

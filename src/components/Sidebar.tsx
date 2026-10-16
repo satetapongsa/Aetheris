@@ -118,19 +118,29 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className="brand-subtitle">v2.5 Pro Neural</span>
             </div>
           </div>
-          <button
-            className="btn-icon"
-            onClick={onToggleCollapse}
-            title="ยุบแถบข้าง (⌘B)"
-            aria-label="Toggle Sidebar"
-          >
-            <span className="material-symbols-outlined">dock_to_right</span>
-          </button>
+          <div className="sidebar-header-actions">
+            <button
+              className="btn-icon mobile-close-sidebar-btn"
+              onClick={onCloseMobile}
+              title="ปิดเมนู"
+              aria-label="Close sidebar"
+            >
+              <span className="material-symbols-outlined">close</span>
+            </button>
+            <button
+              className="btn-icon desktop-collapse-btn"
+              onClick={onToggleCollapse}
+              title="ยุบแถบข้าง (⌘B)"
+              aria-label="Toggle Sidebar"
+            >
+              <span className="material-symbols-outlined">dock_to_right</span>
+            </button>
+          </div>
         </div>
 
         {/* Action Bar */}
         <div className="sidebar-action-bar">
-          <button className="btn-new-chat" onClick={onNewChat}>
+          <button className="btn-new-chat" onClick={() => { onNewChat(); onCloseMobile(); }}>
             <div className="btn-new-chat-left">
               <span className="material-symbols-outlined icon-add">add</span>
               <span>บทสนทนาใหม่ (New Chat)</span>

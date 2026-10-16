@@ -37,12 +37,17 @@ export async function generateDeepSeekResponse(
     systemPrompt?: string;
     temperature?: number;
     maxTokens?: number;
+    apiKey?: string;
   } = {}
 ): Promise<FormattedAIResponse> {
   const startTime = Date.now();
 
-  // If DeepSeek API key is present in environment, call DeepSeek API directly
-  if (isDeepSeekConfigured) {
+  const activeKey = (options.apiKey && options.apiKey.trim().length > 0)
+    ? options.apiKey.trim()
+    : (process.env.DEEPSEEK_API_KEY || process.env.AI_API_KEY || deepseekApiKey || '');
+
+  // If DeepSeek API key is present, call DeepSeek API directly
+  if (activeKey && activeKey.length > 0) {
     try {
       // Use deepseek-reasoner for deep thinking mode or deepseek-chat for standard high-speed mode
       const internalDeepSeekModel = options.thinkingMode ? 'deepseek-reasoner' : 'deepseek-chat';
@@ -74,7 +79,7 @@ export async function generateDeepSeekResponse(
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${deepseekApiKey}`
+          'Authorization': `Bearer ${activeKey}`
         },
         body: JSON.stringify({
           model: internalDeepSeekModel,
