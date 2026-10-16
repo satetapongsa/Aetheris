@@ -83,7 +83,7 @@ model Setting {
   userId String @unique
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
   theme String @default("dark")
-  model String @default("Zyntra v5")
+  model String @default("Aetheris 2.5 Pro Neural")
   temperature Float @default(0.7)
   language String @default("en")
   maxTokens Int @default(2048)

@@ -13,11 +13,11 @@ export default async function Home() {
         user={user}
         initialChats={[]}
         settings={{
-          model: 'Zyntra v5',
+          model: 'Aetheris 2.5 Pro Neural',
           temperature: 0.7,
           maxTokens: 2048,
           topP: 1,
-          systemPrompt: 'You are a helpful assistant.',
+          systemPrompt: 'You are Aetheris AI v2.5 Pro Neural, a helpful assistant.',
         }}
         initialUsage={{ used: 0, limit: 100 }}
       />

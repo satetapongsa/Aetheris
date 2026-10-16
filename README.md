@@ -1,171 +1,97 @@
-# Zyntra — Enterprise Autonomous AI Workspace Platform
+# Aetheris AI — Flagship Intelligence Workspace Platform
 
 [![Next.js](https://img.shields.io/badge/Next.js-15.2.4-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.0.0-blue?style=flat&logo=react)](https://react.dev/)
 [![Prisma](https://img.shields.io/badge/Prisma-6.5.0-2D3748?style=flat&logo=prisma)](https://www.prisma.io/)
 [![Neon Database](https://img.shields.io/badge/Neon-Serverless_Postgres-00E599?style=flat&logo=postgresql)](https://neon.tech/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8.2-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-v4-06B6D4?style=flat&logo=tailwindcss)](https://tailwindcss.com/)
+[![Design System](https://img.shields.io/badge/Design_System-Luminescent_Slate-c2c3ee?style=flat)](https://github.com/satetapongsa/Zyntra)
 
-> **Zyntra** is an enterprise-grade, privacy-first, self-hosted AI conversation orchestration platform engineered to bridge client applications with upstream LLMs (DeepSeek-R1 / DeepSeek-V3, OpenAI, Gemini, Claude). It features deep reasoning visualization, document attachment analysis, corporate prompt libraries, session export, and strict RBAC authorization.
+> **Aetheris AI** (v2.5 Pro Neural) เป็นแพลตฟอร์ม AI Workspace ยุคใหม่ระดับองค์กร ออกแบบโฉมใหม่ทั้งหมดโดยอิงตามแนวทางดีไซน์ **Luminescent Slate** เน้นความหรูหรา โมเดิร์น ประสิทธิภาพสูง พร้อมระบบคิดแบบ Deep Reasoning, การวิเคราะห์เอกสารแนบ, คลังเทมเพลตมาตรฐาน และการประมวลผลคำสั่งแบบเรียลไทม์
 
 ---
 
-## ⚡ Quick Start & Development
+## 🎨 การปรับโฉมครั้งใหญ่ (Major Redesign to Aetheris AI)
 
-### 1. Requirements
+ระบบได้รับการล้างภาพลักษณ์เดิมทั้งหมดและแปลงโฉมเป็น **Aetheris AI**:
+1. **อัตลักษณ์และตราสัญลักษณ์ (Brand & Logo Glyph):**
+   - ออกแบบ Vector SVG Geometric Intelligence Node Logo ประจำ Aetheris AI (`public/aetheris-logo.svg`)
+   - ปรับชื่อระบบ หัวเรื่อง และ Metadata เป็น **Aetheris AI - Flagship Intelligence**
+   - เปลี่ยนชื่อ Engine หลักและการระบุตัวตน AI เป็น `Aetheris AI v2.5 Pro Neural`
+2. **ระบบสีและธีม (Luminescent Slate Color Palette):**
+   - ใช้โทน Void Dark Slates: พื้นหลังหลัก `#0e0e12`, พื้นผิวยกระดับ `#131319`, `#191920`, `#1f1f27`, `#25252e`
+   - แสงสะท้อนและเส้นขอบกระจก Hairline Glass Borders (`rgba(255, 255, 255, 0.08)`)
+   - สีคู่ไฮไลต์โทนม่วงสลレートและโพลาร์บลู `#c2c3ee` และ `#4d4f74`
+   - เอฟเฟกต์แสงบรรยากาศ Radial Ambient Glow และการไล่ระดับแสงที่นุ่มนวล
+3. **ระบบฟอนต์ระดับพรีเมียม (Typography System):**
+   - **Plus Jakarta Sans:** ใช้สำหรับหัวข้อหลัก, Display Title และชื่อแบรนด์
+   - **Inter & Noto Sans Thai:** ใช้งานสำหรับเนื้อหาบทสนทนาและคำอธิบายภาษาไทย/อังกฤษ เพื่อการอ่านที่สบายตา
+   - **JetBrains Mono:** แสดงผลบล็อกโค้ด, Badge, ตัวนับโทเคน และค่าทางเทคนิค
+4. **ส่วนประกอบหน้าจอ (Redesigned Components):**
+   - **Workspace Sidebar:** โลโก้ใหม่พร้อมแถบสถานะ v2.5, ปุ่ม New Chat (`⌘N`), กล่องค้นหา (`⌘K`), แท่งหลอดโควตาสีขาวเรืองแสง และการ์ดข้อมูลผู้ใช้สไตล์โปร่งแสง
+   - **Top Navigation Bar:** บริดจ์สถานะ Aetheris 2.5 Pro Neural, ตัวชี้วัดสถานะเครือข่าย (Thinking Mode, 128k Context, Latency Telemetry), ปุ่มคลังเทมเพลต และส่งออกบทสนทนา
+   - **Message Feed & Reasoning:** แถบ Accordion สำหรับดูกระบวนการคิด (Deep Reasoning Process) พร้อมการไฮไลต์โค้ดสไตล์ VS Code Dark Modern
+   - **Floating Command Prompt Deck:** แท่นสั่งการลอยตัวแบบ Glassmorphism ด้านล่าง พร้อมปุ่มแนบไฟล์, Deep Reasoning mode, ตัวนับโทเคน และปุ่มส่งไล่เฉดสี
+   - **Authentication Portal (/login, /register):** กล่องกระจก Blur Card พร้อมไฟ Ambient Orbs และความปลอดภัยระดับ SOC-2
+   - **Admin Management Console (/admin):** แดชบอร์ดตรวจสอบประสิทธิภาพ ระบบจัดการบัญชีผู้ใช้ และสถิติโควตาโทเคน
+
+---
+
+## ⚡ การติดตั้งและเริ่มใช้งาน (Quick Start)
+
+### 1. ความต้องการของระบบ
 - Node.js 20+
-- PostgreSQL (or Serverless [Neon Database](https://neon.tech/))
+- PostgreSQL (หรือ Serverless [Neon Database](https://neon.tech/))
 - npm / pnpm / yarn
 
-### 2. Installation & Setup
-
+### 2. ติดตั้งแพ็กเกจ
 ```bash
-# Clone the repository
-git clone https://github.com/satetapongsa/Zyntra.git
-cd Zyntra
-
-# Install dependencies
+# ติดตั้ง dependencies
 npm install
 
-# Setup environment variables
+# กำหนดค่า environment variables
 cp .env.example .env
 
-# Sync schema to PostgreSQL / Neon
+# ซิงก์ Schema เข้ากับฐานข้อมูล
 npx prisma db push
 
 # Generate Prisma Client
 npx prisma generate
 ```
 
-### 3. Run Development Server
-
-The application is configured to run on port **3300**:
-
+### 3. รันเซิร์ฟเวอร์สำหรับพัฒนา
 ```bash
-npx next dev -p 3300
+npm run dev
 ```
-
-Open [http://localhost:3300](http://localhost:3300) in your browser.
-
----
-
-## 🚀 Key Features
-
-### 🧠 Collapsible Thinking Process (DeepSeek-R1 / Reasoning)
-- **Real-Time Reasoning Parser:** Automatically extracts and isolates `<think>...</think>` tags during token streaming and upon completion.
-- **Accordion Drawer:** Clean, collapsible UI allowing users to inspect or hide chain-of-thought analysis, architecture decisions, and reasoning steps without cluttering the final output.
-
-### 📎 Document & Code Attachment Analysis
-- **Attach Documents (📎):** Supports client-side ingestion of `.txt`, `.md`, `.json`, `.csv`, `.js`, `.ts`, `.tsx`, `.html`, `.css`, `.py`, `.sql` files up to 2MB.
-- **Attachment Chips:** Interactive preview badges displaying file names, formatted sizes, and instant removal options.
-- **Context Injection:** Seamlessly bundles document contents directly into the prompt payload for instant summarization, code reviews, and data extraction.
-
-### 🏛️ Enterprise-Grade Chat Experience
-- **Differentiated Capsule Message Flow:** High-contrast user capsules aligned alongside sleek, styled assistant surfaces labeled `ENTERPRISE AI`.
-- **Telemetries & Action Bar:**
-  - 📋 **Copy:** One-click copy with visual tick feedback.
-  - 🔄 **Retry / Regenerate:** Regenerate responses on demand.
-  - 👍 / 👎 **Feedback Ratings:** Helpful / Needs Improvement evaluation buttons.
-  - ⏱️ **Telemetry Metrics:** Live response latency and token usage metrics.
-- **📚 Enterprise Prompt Library:** Integrated template drawer for common enterprise workflows (Executive Briefings, Code Review, Formal Customer Communications, Meeting Action Items).
-- **📥 Conversation Export:** Export full conversations as cleanly formatted Markdown (`.md`) files with timestamps and author headers.
-- **🔒 Admin-Locked Preferences:** User Preferences (Model, Temperature, Maximum tokens, System Prompt) are locked and managed centrally by system administrators.
+เปิดบราวเซอร์ที่ [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 📐 High-Level Architecture
+## 🚀 ฟีเจอร์หลัก (Key Features)
 
-```mermaid
-graph TB
-    subgraph Client_Layer ["Client Tier (Browser / Mobile)"]
-        UI["React 19 Client SPA<br/>(Thinking Drawer, File Attachments, Markdown, Presets)"]
-    end
-
-    subgraph Ingress_Layer ["Ingress & Reverse Proxy"]
-        RP["Reverse Proxy / Cloudflare / Nginx<br/>(TLS Termination, DDoS, Rate Limiting)"]
-    end
-
-    subgraph Application_Tier ["Application Tier (Next.js 15 App Router)"]
-        AuthMiddleware["Auth & RBAC Interceptor<br/>(jose HS256, HTTP-Only Cookies)"]
-        APIRoutes["Route Handlers (Zod Schemas)"]
-        StreamEngine["Streaming Engine<br/>(ReadableStream / Server-Sent Events)"]
-        ProviderAdapter["Multi-Provider LLM Gateway<br/>(DeepSeek / OpenAI / Gemini / Claude)"]
-    end
-
-    subgraph Data_Tier ["Data & Persistence Tier"]
-        PrismaORM["Prisma ORM Client (v6)"]
-        PostgresDB[("Neon Serverless PostgreSQL<br/>(Chats, Messages, Logs, Settings, Usage)")]
-    end
-
-    subgraph External_Cloud ["Upstream AI Providers"]
-        DeepSeek["DeepSeek API (V3 / R1)"]
-        OpenAI["OpenAI API"]
-        Gemini["Google Gemini Gateway"]
-        Anthropic["Anthropic Claude API"]
-    end
-
-    UI -->|"HTTPS / Cookie Session"| RP
-    RP --> Application_Tier
-    AuthMiddleware --> APIRoutes
-    APIRoutes --> StreamEngine
-    StreamEngine --> ProviderAdapter
-    ProviderAdapter -->|"SSE Stream / AbortSignal"| External_Cloud
-    APIRoutes --> PrismaORM
-    StreamEngine -.->|"Atomic Transaction (onDone)"| PrismaORM
-    PrismaORM -->|"TCP / Connection Pool"| PostgresDB
-```
+- **🧠 Collapsible Thinking Process:** แยกแท็ก `<think>...</think>` สำหรับโมเดล Reasoning โดยอัตโนมัติ พร้อมสวิตช์เปิด/ปิดขั้นตอนการคิด
+- **📎 Ingest & Analyze Attachments:** รองรับการแนบไฟล์โค้ดและเอกสาร (`.pdf`, `.txt`, `.md`, `.json`, `.csv`, `.js`, `.ts`, `.tsx`, `.py`, `.sql`) สูงสุด 5MB
+- **📚 Enterprise Prompt Library:** คลังพร้อมต์แม่แบบสำหรับงานระดับองค์กร เช่น การสรุปรายงานผู้บริหาร, Code Review, การตอบอีเมลทางการ
+- **📥 Session Markdown Export:** บันทึกและดาวน์โหลดประวัติการสนทนาทั้งหมดเป็นไฟล์ `.md` ได้ในคลิกเดียว
+- **⚡ Adaptive Streaming Engine:** ถ่ายทอดข้อความผ่าน Server-Sent Events (SSE) แบบเรียลไทม์ ปลอดภัยและลื่นไหล
+- **🛡️ Enterprise Security & SOC-2 Compliance:** ระบบจำกัดสิทธิ์ (RBAC), ถอดรหัส JWT ปลอดภัย และการป้องกันความลับระดับ Server-side
 
 ---
 
-## ⚙️ Environment Variables
-
-Copy `.env.example` to `.env` and configure:
+## ⚙️ ตัวแปรสภาพแวดล้อม (Environment Variables)
 
 | Variable | Description | Example / Default |
 | :--- | :--- | :--- |
 | `DATABASE_URL` | Neon / PostgreSQL connection string | `postgresql://user:pass@host/neondb?sslmode=require` |
-| `JWT_SECRET` | Cryptographic secret for JWTs ($\ge 32$ chars) | `replace-with-at-least-32-random-characters` |
-| `AI_PROVIDER` | Upstream provider (`deepseek`, `openai`, `gemini`, `claude`) | `deepseek` |
-| `DEEPSEEK_API_KEY` | DeepSeek API key | `sk-...` |
-| `OPENAI_API_KEY` | OpenAI API key | `sk-...` |
-| `GEMINI_API_KEY` | Google Gemini API key | `AIza...` |
-| `CLAUDE_API_KEY` | Anthropic Claude API key | `sk-ant-...` |
-| `AI_MODEL` | Provider model override | `deepseek-chat` |
-| `APP_URL` | Application URL | `http://localhost:3300` |
-| `DEMO_MODE` | Enable preview mock admin | `false` |
-
-> 🔒 **Security Notice:** `.env` and `.env.*` files are strictly excluded via `.gitignore` to prevent secret leakage. Never commit production keys to version control.
-
----
-
-## 🐳 Docker Deployment
-
-Run database and app services with Docker Compose:
-
-```bash
-# Start PostgreSQL database container (if not using Neon)
-docker compose up -d db
-
-# Run database migrations
-npx prisma migrate deploy
-
-# Build and start application container
-docker compose up --build -d app
-```
-
----
-
-## 🔒 Security Baseline
-
-- **Zero Client-Side Secrets:** All upstream API keys remain strictly server-side.
-- **Strict Parameterization:** All SQL operations parameterized through Prisma ORM.
-- **Input Validation:** Endpoints guarded by strict `zod` schemas.
-- **Password Hashing:** Passwords encrypted using `bcryptjs` (salt cost 12).
-- **Stream Buffering:** HTTP headers specify `X-Accel-Buffering: no` for smooth streaming.
+| `JWT_SECRET` | Secret key สำหรับ Sign JWT ($\ge 32$ chars) | `your-secret-key-at-least-32-characters` |
+| `AI_PROVIDER` | ผู้ให้บริการ AI (`deepseek`, `openai`, `gemini`, `claude`) | `deepseek` |
+| `DEEPSEEK_API_KEY` | DeepSeek API Key | `sk-...` |
+| `OPENAI_API_KEY` | OpenAI API Key | `sk-...` |
+| `GEMINI_API_KEY` | Google Gemini API Key | `AIza...` |
+| `CLAUDE_API_KEY` | Anthropic Claude API Key | `sk-ant-...` |
+| `AI_MODEL` | รหัสโมเดลที่ต้องการเจาะจง | `deepseek-chat` |
 
 ---
 
 ## 📄 License
-
-Distributed under the [MIT License](LICENSE). Built for teams requiring autonomous control over generative AI workspaces.
+Distributed under the [MIT License](LICENSE). Built for enterprise teams requiring autonomous, elegant control over generative AI workspaces.

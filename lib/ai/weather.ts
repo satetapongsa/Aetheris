@@ -1,4 +1,4 @@
-// Real-time location & weather resolver for Zyntra AI
+// Real-time location & weather resolver for Aetheris AI
 
 const THAI_LOCATIONS: Record<string, string> = {
   'กรุงเทพ': 'Bangkok',

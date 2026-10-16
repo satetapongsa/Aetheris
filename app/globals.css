@@ -1,22 +1,71 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
 :root {
   color-scheme: dark;
-  --bg: #0d0d0d;
-  --panel: #171717;
-  --line: #262626;
-  --muted: #8e8e8e;
-  --text: #ececec;
-  --accent: #ffffff;
+
+  /* Luminescent Slate Design Tokens (Exact Aetheris AI specification) */
+  --background: #0e0e12;
+  --on-background: #e7e4f0;
+  
+  --surface: #0e0e12;
+  --surface-dim: #0e0e12;
+  --surface-bright: #2c2b35;
+  --surface-container-lowest: #000000;
+  --surface-container-low: #131319;
+  --surface-container: #191920;
+  --surface-container-high: #1f1f27;
+  --surface-container-highest: #25252e;
+  --surface-variant: #25252e;
+
+  --on-surface: #e7e4f0;
+  --on-surface-variant: #aca9b6;
+  --inverse-surface: #fcf8ff;
+  --inverse-on-surface: #56545a;
+
+  --outline: #76747f;
+  --outline-variant: #484751;
+
+  --primary: #c2c3ee;
+  --primary-dim: #b4b5e0;
+  --on-primary: #3b3d61;
+  --primary-container: #4d4f74;
+  --on-primary-container: #e1e1ff;
+  --inverse-primary: #5a5c81;
+
+  --secondary: #c5c4dd;
+  --secondary-dim: #b7b7cf;
+  --on-secondary: #3e3f52;
+  --secondary-container: #393a4d;
+  --on-secondary-container: #bebdd5;
+
+  --tertiary: #fddfff;
+  --tertiary-dim: #e6bfeb;
+  --on-tertiary: #694a6f;
+  --tertiary-container: #f5cdfa;
+  --on-tertiary-container: #604266;
+
+  --error: #f97386;
+  --error-dim: #c44b5f;
+  --on-error: #490013;
+  --error-container: #871c34;
+  --on-error-container: #ff97a3;
 }
 
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--background);
+  color: var(--on-surface);
+  font-family: 'Inter', 'Noto Sans Thai', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, .font-headline, .font-headline-lg, .font-headline-md, .font-headline-sm, .font-display-lg {
+  font-family: 'Plus Jakarta Sans', 'Noto Sans Thai', 'Inter', sans-serif;
+}
+
+.font-code-sm, .font-mono, code, kbd {
+  font-family: 'JetBrains Mono', monospace;
 }
 
 button, input, textarea, select {
@@ -27,24 +76,60 @@ button {
   cursor: pointer;
 }
 
+/* Custom Scrollbar styled strictly to Luminescent Slate */
+.custom-scroll::-webkit-scrollbar,
 .chat-scroll::-webkit-scrollbar {
-  width: 6px;
+  width: 5px;
+  height: 5px;
 }
 
+.custom-scroll::-webkit-scrollbar-track,
+.chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb,
 .chat-scroll::-webkit-scrollbar-thumb {
-  background: #30323a;
-  border-radius: 8px;
+  background: rgba(72, 71, 81, 0.4);
+  border-radius: 9999px;
 }
 
-/* Polished Prose / Markdown Styling */
+.custom-scroll::-webkit-scrollbar-thumb:hover,
+.chat-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(118, 116, 127, 0.6);
+}
+
+/* Ambient radial glow utilities */
+.radial-ambient {
+  background: radial-gradient(circle at 50% 20%, rgba(114, 116, 155, 0.12) 0%, rgba(9, 10, 15, 0) 70%);
+}
+
+.card-glass {
+  background: rgba(19, 19, 25, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 1px rgba(114, 116, 155, 0.08), 0 25px 50px -12px rgba(0, 0, 0, 0.85);
+}
+
+.btn-gradient-primary {
+  background: linear-gradient(135deg, #72749B 0%, #4D4F74 100%);
+  box-shadow: 0 4px 18px rgba(114, 116, 155, 0.28);
+}
+.btn-gradient-primary:hover {
+  box-shadow: 0 6px 24px rgba(114, 116, 155, 0.42);
+  transform: translateY(-1px);
+}
+
+/* Polished Prose / Markdown Styling conforming to Luminescent Slate */
 .prose {
-  line-height: 1.65;
-  color: #e2e3e7;
+  line-height: 1.7;
+  color: #e7e4f0;
   word-break: break-word;
 }
 
 .prose p {
-  margin: 0.4rem 0;
+  margin: 0.5rem 0;
 }
 
 .prose p:first-child {
@@ -57,31 +142,33 @@ button {
 
 .prose h1, .prose h2, .prose h3, .prose h4 {
   color: #ffffff;
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
   font-weight: 600;
-  margin: 0.8rem 0 0.4rem 0;
-  line-height: 1.3;
+  margin: 1rem 0 0.5rem 0;
+  line-height: 1.35;
+  letter-spacing: -0.015em;
 }
 
-.prose h1 { font-size: 1.25rem; }
-.prose h2 { font-size: 1.15rem; }
-.prose h3 { font-size: 1.05rem; }
+.prose h1 { font-size: 1.35rem; }
+.prose h2 { font-size: 1.2rem; }
+.prose h3 { font-size: 1.08rem; }
 
 .prose ul, .prose ol {
-  margin: 0.4rem 0;
-  padding-left: 1.35rem;
+  margin: 0.5rem 0;
+  padding-left: 1.4rem;
 }
 
 .prose ul { list-style-type: disc; }
 .prose ol { list-style-type: decimal; }
 
 .prose li {
-  margin: 0.2rem 0;
+  margin: 0.25rem 0;
 }
 
 .prose hr {
   border: none;
-  border-top: 1px solid #282a32;
-  margin: 0.8rem 0;
+  border-top: 1px solid rgba(72, 71, 81, 0.4);
+  margin: 1rem 0;
 }
 
 .prose pre {
@@ -90,7 +177,7 @@ button {
   border: none;
   border-radius: 0;
   padding: 0;
-  margin: 0.6rem 0;
+  margin: 0.8rem 0;
 }
 
 .vscode-code-block pre {
@@ -104,50 +191,59 @@ button {
 }
 
 .prose code {
-  background: #1e2027;
-  border: 1px solid #2d3039;
-  border-radius: 4px;
-  padding: 2px 5px;
-  font-size: 0.88em;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background: #191920;
+  border: 1px solid rgba(72, 71, 81, 0.5);
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-size: 0.86em;
+  color: #c2c3ee;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 .prose pre code {
   background: transparent;
   border: none;
   padding: 0;
+  color: inherit;
 }
 
 .prose blockquote {
-  border-left: 3px solid #3b3e4a;
-  padding-left: 10px;
-  margin: 0.5rem 0;
-  color: #9ea0aa;
+  border-left: 3px solid #4d4f74;
+  padding-left: 14px;
+  margin: 0.75rem 0;
+  color: #aca9b6;
+  font-style: italic;
 }
 
 .prose table {
   width: 100%;
   border-collapse: collapse;
-  margin: 0.6rem 0;
+  margin: 0.75rem 0;
+  font-size: 0.9em;
 }
 
 .prose th, .prose td {
-  border: 1px solid #282a32;
-  padding: 6px 10px;
+  border: 1px solid rgba(72, 71, 81, 0.35);
+  padding: 8px 12px;
   text-align: left;
 }
 
 .prose th {
-  background: #16181e;
+  background: #191920;
   font-weight: 600;
+  color: #ffffff;
+}
+
+.prose tr:nth-child(even) {
+  background: rgba(25, 25, 32, 0.4);
 }
 
 .fade-in {
-  animation: fade .25s ease-out;
+  animation: fade .2s ease-out;
 }
 
 @keyframes fade {
-  from { opacity: 0; transform: translateY(5px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: translateY(0); }
 }
 
@@ -165,9 +261,9 @@ button {
 .vscode-line-numbers {
   user-select: none;
   text-align: right;
-  color: #636674;
+  color: #76747f;
   padding-right: 16px;
-  border-right: 1px solid #23252d;
+  border-right: 1px solid rgba(72, 71, 81, 0.35);
   font-family: 'JetBrains Mono', Consolas, monospace;
   font-size: 12px;
   line-height: 1.6;
@@ -240,4 +336,3 @@ button {
 .token.class-name {
   color: #4ec9b0;
 }
-

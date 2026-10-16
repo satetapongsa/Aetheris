@@ -16,4 +16,4 @@ export async function complete(turns: Turn[], opts: { temperature: number; maxTo
    return response;
  } catch(e) { if (e instanceof Error && e.name === 'TimeoutError') throw new Error('AI provider timed out'); throw e; }
 }
-export function activeModel() { const p=(process.env.AI_PROVIDER||'deepseek').toLowerCase(); if(p==='deepseek') return 'Zyntra v5'; return config[p]?.model || 'Zyntra v5'; }
+export function activeModel() { const p=(process.env.AI_PROVIDER||'deepseek').toLowerCase(); if(p==='deepseek') return 'Aetheris 2.5 Pro Neural'; return config[p]?.model || 'Aetheris 2.5 Pro Neural'; }
