@@ -1,53 +1,32 @@
-# Aetheris AI — Flagship Intelligence Workspace
+# React + TypeScript + Vite
 
-Aetheris AI is a high-performance, dark-mode AI Chatbot workspace engineered for deep technical problem solving, code reviews, and fluid human-AI collaboration.
+This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
-Built with the **Luminescent Slate** design system, featuring glassmorphism, ambient auroras, and precision typography.
+Currently, two official plugins are available:
 
----
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
 
-## 🚀 Tech Stack
+## React Compiler
 
-- **Frontend**: React 19, TypeScript, Vite, Vanilla CSS (Luminescent Slate Design System)
-- **Backend API**: Node.js, Express, TypeScript (TSX)
-- **Database**: Neon Serverless PostgreSQL (`@neondatabase/serverless`)
-- **AI Engine**: DeepSeek AI (`deepseek-chat` / `deepseek-reasoner` via backend proxy)
-- **Auth**: JWT & Bcrypt password encryption
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
 
----
+## Expanding the Oxlint configuration
 
-## 🛠️ Getting Started
+If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
 
-### 1. Install Dependencies
-```bash
-npm install
+```json
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "typescript", "oxc"],
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "react/rules-of-hooks": "error",
+    "react/only-export-components": ["warn", { "allowConstantExport": true }]
+  }
+}
 ```
 
-### 2. Configure Environment Variables
-Copy `.env.example` to `.env`:
-```bash
-cp .env.example .env
-```
-
-Set your configuration in `.env`:
-```env
-PORT=3001
-DATABASE_URL=postgresql://user:password@ep-xyz.us-east-2.aws.neon.tech/neondb?sslmode=require
-DEEPSEEK_API_KEY=your_deepseek_api_key_here
-JWT_SECRET=your_jwt_secret_key_here
-```
-
-### 3. Run Development Server
-```bash
-npm run dev
-```
-This runs both the frontend (`http://localhost:5173`) and the backend API server (`http://localhost:3001`) concurrently.
-
----
-
-## 📦 Production Build
-
-```bash
-npm run build
-```
-Creates optimized client bundles in `dist/`.
+See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.

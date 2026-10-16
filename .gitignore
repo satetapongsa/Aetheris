@@ -16,7 +16,7 @@ dist-ssr
 .env
 .env*.local
 
-# Design reference assets
+# Reference folder
 stitch_clean_dark_ai_chatbot/
 
 # Editor directories and files

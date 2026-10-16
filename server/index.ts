@@ -38,19 +38,21 @@ app.use('/api/auth', authRoutes);
 app.use('/api/chat', chatRoutes);
 app.use('/api/sessions', sessionsRoutes);
 
-// Start server
-app.listen(PORT, async () => {
-  console.log(`=======================================================`);
-  console.log(`🚀 Aetheris AI Backend Server running on port ${PORT}`);
-  console.log(`📡 Health Check: http://localhost:${PORT}/api/health`);
-  console.log(`🗄️  Neon Database: ${isNeonConfigured ? 'CONNECTED' : 'STANDBY (Memory Mode)'}`);
-  console.log(`🧠 AI Engine:     ${isDeepSeekConfigured ? 'CONNECTED' : 'STANDBY (Local Mode)'}`);
-  console.log(`=======================================================`);
+// Start server locally (on Vercel, it is exported as a serverless handler)
+if (!process.env.VERCEL) {
+  app.listen(PORT, async () => {
+    console.log(`=======================================================`);
+    console.log(`🚀 Aetheris AI Backend Server running on port ${PORT}`);
+    console.log(`📡 Health Check: http://localhost:${PORT}/api/health`);
+    console.log(`🗄️  Neon Database: ${isNeonConfigured ? 'CONNECTED' : 'STANDBY (Memory Mode)'}`);
+    console.log(`🧠 AI Engine:     ${isDeepSeekConfigured ? 'CONNECTED' : 'STANDBY (Local Mode)'}`);
+    console.log(`=======================================================`);
 
-  // Run migrations if Neon connection string is provided
-  if (isNeonConfigured) {
-    await initDbSchema();
-  }
-});
+    // Run migrations if Neon connection string is provided
+    if (isNeonConfigured) {
+      await initDbSchema();
+    }
+  });
+}
 
 export default app;
