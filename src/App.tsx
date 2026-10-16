@@ -422,6 +422,7 @@ export async function registerAction(prevState: any, formData: FormData) {
           onShareSession={handleShareSession}
           onOpenCheckout={() => setCheckoutModalOpen(true)}
           onOpenLogin={() => setLoginModalOpen(true)}
+          currentUser={currentUser}
         />
 
         {/* 3. Central Chat Viewport */}

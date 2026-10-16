@@ -189,7 +189,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <span className="user-name">{currentUser.name}</span>
                   <span className="badge-pro">{currentUser.tier}</span>
                 </div>
-                <span className="user-email">{currentUser.email}</span>
+                <span className="user-email">{currentUser.email || 'คลิกเพื่อเข้าสู่ระบบ'}</span>
               </div>
             </div>
             <button className="btn-icon-subtle btn-user-options" title="บัญชีผู้ใช้งาน">

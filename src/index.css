@@ -1719,37 +1719,49 @@ html, body {
    ========================================================================== */
 .modal-login-card {
   width: 100%;
-  max-width: 440px;
-  padding: 32px 28px;
+  max-width: 420px;
+  padding: 24px 22px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: 12px;
+  overflow: hidden !important;
+  max-height: 94vh;
+}
+
+.modal-login-card.fit-modal-card {
+  overflow-y: visible !important;
+  max-height: none !important;
 }
 
 .auth-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
 .auth-logo-badge {
-  padding: 8px;
-  border-radius: var(--radius-lg);
+  padding: 4px;
+  border-radius: var(--radius-md);
   background: rgba(25, 25, 32, 0.8);
   border: 1px solid var(--border-subtle);
   display: inline-flex;
 }
 
+.brand-svg-sm {
+  width: 36px;
+  height: 36px;
+}
+
 .auth-title {
   font-family: var(--font-display);
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--on-surface);
 }
 
 .auth-subtitle {
-  font-size: 13px;
+  font-size: 12px;
   color: var(--on-surface-variant);
   text-align: center;
 }
@@ -1764,12 +1776,12 @@ html, body {
 }
 
 .auth-tab-btn {
-  padding: 7px;
+  padding: 6px;
   border-radius: var(--radius-md);
   background: transparent;
   border: none;
   color: var(--on-surface-variant);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1782,6 +1794,49 @@ html, body {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
+.social-logins-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.btn-social-compact {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  background: rgba(25, 25, 32, 0.85);
+  border: 1px solid var(--border-subtle);
+  color: var(--on-surface);
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.15s ease;
+}
+
+.btn-social-compact:hover {
+  background: var(--surface-container-high);
+  border-color: rgba(194, 195, 238, 0.35);
+  transform: translateY(-1px);
+}
+
+.auth-error-banner {
+  padding: 6px 10px;
+  border-radius: 8px;
+  background: rgba(249, 115, 134, 0.15);
+  border: 1px solid rgba(249, 115, 134, 0.3);
+  color: var(--error);
+  font-size: 11.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .social-logins-stack {
   display: flex;
   flex-direction: column;
@@ -1790,7 +1845,7 @@ html, body {
 
 .btn-social {
   width: 100%;
-  height: 42px;
+  height: 40px;
   padding: 0 16px;
   border-radius: var(--radius-md);
   background: rgba(25, 25, 32, 0.9);

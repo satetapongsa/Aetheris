@@ -13,6 +13,7 @@ interface TopNavProps {
   onShareSession: () => void;
   onOpenCheckout: () => void;
   onOpenLogin: () => void;
+  currentUser?: { name: string; isLoggedIn: boolean };
 }
 
 const MODEL_NAMES: Record<ModelId, { full: string; short: string }> = {
@@ -32,7 +33,8 @@ export const TopNav: React.FC<TopNavProps> = ({
   onOpenAnalytics,
   onShareSession,
   onOpenCheckout,
-  onOpenLogin
+  onOpenLogin,
+  currentUser
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -163,7 +165,7 @@ export const TopNav: React.FC<TopNavProps> = ({
         </button>
         <button className="btn-subtle" onClick={onOpenLogin} title="บัญชีผู้ใช้งาน">
           <span className="material-symbols-outlined">person</span>
-          <span className="btn-label-text">เข้าสู่ระบบ</span>
+          <span className="btn-label-text">{currentUser?.isLoggedIn ? currentUser.name : 'เข้าสู่ระบบ'}</span>
         </button>
       </div>
     </header>

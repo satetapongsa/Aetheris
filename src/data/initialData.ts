@@ -1,11 +1,11 @@
 import type { ChatSession, User } from '../types';
 
 export const INITIAL_USER: User = {
-  name: 'Alex Mercer',
-  email: 'alex.mercer@neural.io',
-  initials: 'AM',
-  tier: 'PRO',
-  isLoggedIn: true
+  name: 'ผู้ใช้งานทั่วไป',
+  email: '',
+  initials: 'GU',
+  tier: 'FREE',
+  isLoggedIn: false
 };
 
 export interface StarterPrompt {
