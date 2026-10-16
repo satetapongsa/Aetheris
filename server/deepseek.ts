@@ -26,6 +26,71 @@ export interface FormattedAIResponse {
 }
 
 /**
+ * Fetch real-time public weather data from public service without API key
+ */
+async function fetchRealtimeWeather(query: string): Promise<string | null> {
+  const weatherKeywords = ['สภาพอากาศ', 'อากาศ', 'พยากรณ์', 'อุณหภูมิ', 'ฝนตก', 'แดด', 'weather', 'forecast', 'temperature'];
+  const hasWeatherQuery = weatherKeywords.some(kw => query.toLowerCase().includes(kw));
+  if (!hasWeatherQuery) return null;
+
+  let city = 'Bangkok';
+  let cityNameTh = 'กรุงเทพมหานคร';
+
+  const provinceMap: Record<string, { en: string; th: string }> = {
+    'เชียงใหม่': { en: 'ChiangMai', th: 'เชียงใหม่' },
+    'ภูเก็ต': { en: 'Phuket', th: 'ภูเก็ต' },
+    'ขอนแก่น': { en: 'KhonKaen', th: 'ขอนแก่น' },
+    'ชลบุรี': { en: 'ChonBuri', th: 'ชลบุรี' },
+    'พัทยา': { en: 'Pattaya', th: 'พัทยา' },
+    'สงขลา': { en: 'Songkhla', th: 'สงขลา' },
+    'หาดใหญ่': { en: 'HatYai', th: 'หาดใหญ่' },
+    'โคราช': { en: 'NakhonRatchasima', th: 'นครราชสีมา' },
+    'นครราชสีมา': { en: 'NakhonRatchasima', th: 'นครราชสีมา' },
+    'โตเกียว': { en: 'Tokyo', th: 'โตเกียว' },
+    'london': { en: 'London', th: 'ลอนดอน' },
+    'tokyo': { en: 'Tokyo', th: 'โตเกียว' },
+    'new york': { en: 'NewYork', th: 'นิวยอร์ก' }
+  };
+
+  for (const [key, val] of Object.entries(provinceMap)) {
+    if (query.toLowerCase().includes(key.toLowerCase())) {
+      city = val.en;
+      cityNameTh = val.th;
+      break;
+    }
+  }
+
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2500);
+    const res = await fetch(`https://wttr.in/${city}?format=j1`, {
+      signal: controller.signal,
+      headers: { 'User-Agent': 'AetherisAI/1.0' }
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return null;
+
+    const data: any = await res.json();
+    const current = data.current_condition?.[0];
+    const forecast = data.weather?.[0];
+    if (!current) return null;
+
+    const desc = current.weatherDesc?.[0]?.value || '';
+    const tempC = current.temp_C;
+    const feelsLike = current.FeelsLikeC;
+    const humidity = current.humidity;
+    const wind = current.windspeedKmph;
+    const maxTemp = forecast?.maxtempC || '';
+    const minTemp = forecast?.mintempC || '';
+
+    return `ข้อมูลสภาพอากาศและพยากรณ์สด (${cityNameTh} / ${city}): สภาพอากาศปัจจุบัน: ${desc}, อุณหภูมิ: ${tempC}°C (รู้สึกจริง: ${feelsLike}°C), ความชื้น: ${humidity}%, ลม: ${wind} km/h, พยากรณ์วันนี้: สูงสุด ${maxTemp}°C / ต่ำสุด ${minTemp}°C`;
+  } catch (err) {
+    console.warn('[Weather Service] Live weather fetch fallback:', err);
+    return null;
+  }
+}
+
+/**
  * Call DeepSeek AI API backend
  * Note: Model names and API usage are kept strictly in backend code per specification.
  */
@@ -52,16 +117,44 @@ export async function generateDeepSeekResponse(
       // Use deepseek-reasoner for deep thinking mode or deepseek-chat for standard high-speed mode
       const internalDeepSeekModel = options.thinkingMode ? 'deepseek-reasoner' : 'deepseek-chat';
 
-      const systemInstruction = options.systemPrompt || 
-        'You are Aetheris AI, a flagship bilingual (Thai and English) intelligence workspace specialized in software engineering, architecture, system design, and deep technical problem solving. Provide elegant, concise, highly structured explanations and clean code snippets.';
+      // Current Real-World Context (Asia/Bangkok timezone)
+      const now = new Date();
+      const thaiDateTimeStr = new Intl.DateTimeFormat('th-TH', {
+        timeZone: 'Asia/Bangkok',
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+      }).format(now);
+
+      // Check if weather info is needed
+      const liveWeatherInfo = await fetchRealtimeWeather(prompt);
+
+      const defaultSystemInstruction = 
+`You are Aetheris AI, an advanced, highly capable intelligence workspace.
+Real-Time Context:
+- วันเวลาปัจจุบัน: ${thaiDateTimeStr} (เขตเวลาเอเชีย/กรุงเทพฯ Asia/Bangkok, UTC+7)
+${liveWeatherInfo ? `- ข้อมูลสภาพอากาศสด: ${liveWeatherInfo}` : ''}
+
+Operational Guidelines:
+1. ประหยัดโทเคน (Token-Efficient): ตอบกระชับ ตรงประเด็น เนื้อหาเข้มข้น ไม่ใช้คำทักทายเวิ่นเว้อซ้ำซาก
+2. ข้อมูลสาธารณะ/วันเวลา/สภาพอากาศ: ใช้ข้อมูลบริบทสดที่ให้มาตอบวันเวลาและสภาพอากาศ/พยากรณ์อากาศอย่างแม่นยำเมื่อผู้ใช้ถาม
+3. ความเชี่ยวชาญ: โค้ดและสถาปัตยกรรมต้องสะอาด ปลอดภัย มีประสิทธิภาพสูง (Clean Code, High Performance)
+4. ภาษา: ตอบเป็นภาษาไทยหรือภาษาอังกฤษตามภาษาที่ผู้ใช้สื่อสารมาอย่างเป็นธรรมชาติ`;
+
+      const systemInstruction = options.systemPrompt || defaultSystemInstruction;
 
       const apiMessages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
         { role: 'system', content: systemInstruction }
       ];
 
-      // Add recent context history if available
+      // Add recent context history if available (limit to last 4 for token efficiency)
       if (options.history && options.history.length > 0) {
-        options.history.slice(-6).forEach(h => {
+        options.history.slice(-4).forEach(h => {
           if (h.content) {
             apiMessages.push({
               role: h.sender === 'user' ? 'user' : 'assistant',
@@ -75,6 +168,9 @@ export async function generateDeepSeekResponse(
 
       console.log(`[DeepSeek Engine] Dispatching request with model: ${internalDeepSeekModel}`);
 
+      // Token efficiency: Limit max_tokens (1500 for standard, 2500 for thinking mode) unless explicitly overridden
+      const resolvedMaxTokens = options.maxTokens ?? (options.thinkingMode ? 2500 : 1500);
+
       const response = await fetch(DEEPSEEK_API_ENDPOINT, {
         method: 'POST',
         headers: {
@@ -85,7 +181,7 @@ export async function generateDeepSeekResponse(
           model: internalDeepSeekModel,
           messages: apiMessages,
           temperature: options.temperature ?? (options.thinkingMode ? 0.6 : 0.7),
-          max_tokens: options.maxTokens ?? 4096
+          max_tokens: resolvedMaxTokens
         })
       });
 
@@ -109,7 +205,7 @@ export async function generateDeepSeekResponse(
   }
 
   // Graceful intelligent synthesis (when API key is not yet set or during offline development)
-  const elapsedSeconds = ((Date.now() - startTime) / 1000 + 1.8).toFixed(1);
+  const elapsedSeconds = ((Date.now() - startTime) / 1000 + 1.2).toFixed(1);
   return generateSimulatedDeepResponse(prompt, elapsedSeconds, options.thinkingMode);
 }
 
@@ -160,7 +256,33 @@ function parseDeepSeekOutput(
     ? `Thought for ${elapsedSec}s: วิเคราะห์บริบท ความถูกต้อง และการออกแบบสถาปัตยกรรม`
     : undefined;
 
-  const thoughtDetails = reasoning || 'ระบบประมวลผลคำตอบโดยอ้างอิงหลักการ Clean Code, High Performance และ Security Standards';
+  const thoughtDetails = reasoning || 'ระบบประมวลผลคำตอบโดยอ้างอิงหลักการความแม่นยำสูง Token Efficiency และ Security Standards';
+
+  // Dynamic contextual suggestions based on content
+  let suggestions = [
+    'ขอคำอธิบายเพิ่มเติม',
+    'วิเคราะห์ประเด็นที่เกี่ยวข้อง',
+    'ตัวอย่างการนำไปใช้งาน'
+  ];
+
+  if (extractedCode || content.includes('```') || /function|const |import |interface /i.test(content)) {
+    suggestions = [
+      'ขอตัวอย่างการทดสอบ Unit Test เพิ่มเติม',
+      'วิเคราะห์แนวทางการ Optimize ประสิทธิภาพ',
+      'การปรับใช้กับ Production Environment'
+    ];
+  } else if (/อากาศ|อุณหภูมิ|weather|forecast|ฝน/i.test(content)) {
+    suggestions = [
+      'พยากรณ์อากาศล่วงหน้าในอีก 3 วัน',
+      'แนวโน้มอุณหภูมิและโอกาสเกิดฝน',
+      'สภาพอากาศในจังหวัดอื่น'
+    ];
+  } else if (/วัน|เวลา|นาฬิกา|time|date/i.test(content)) {
+    suggestions = [
+      'เปรียบเทียบเวลากับเขตเวลาอื่น (เช่น UTC/JST)',
+      'ตรวจสอบวันหยุดนักขัตฤกษ์ถัดไป'
+    ];
+  }
 
   return {
     modelName: 'Aetheris 2.5 Pro Neural',
@@ -169,11 +291,7 @@ function parseDeepSeekOutput(
     thoughtDetails,
     paragraphs,
     codeBlock: extractedCode,
-    suggestions: [
-      'ขอตัวอย่างการทดสอบ Unit Test เพิ่มเติม',
-      'วิเคราะห์แนวทางการ Optimize ประสิทธิภาพ',
-      'การปรับใช้กับ Production Environment'
-    ]
+    suggestions
   };
 }
 
@@ -186,6 +304,45 @@ function generateSimulatedDeepResponse(
   thinkingMode?: boolean
 ): FormattedAIResponse {
   const lower = prompt.toLowerCase();
+  const now = new Date();
+  const thaiDateTimeStr = new Intl.DateTimeFormat('th-TH', {
+    timeZone: 'Asia/Bangkok',
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  }).format(now);
+
+  if (lower.includes('วัน') || lower.includes('เวลา') || lower.includes('time') || lower.includes('date')) {
+    return {
+      modelName: 'Aetheris 2.5 Pro Neural',
+      duration: `เสร็จสิ้นใน ${elapsedSec} วินาที`,
+      paragraphs: [
+        `ขณะนี้คือ <strong>${thaiDateTimeStr}</strong> (เวลามาตรฐานประเทศไทย ICT UTC+7)`
+      ],
+      suggestions: [
+        'พยากรณ์อากาศวันนี้',
+        'สอบถามข้อมูลอื่น'
+      ]
+    };
+  }
+
+  if (lower.includes('อากาศ') || lower.includes('weather') || lower.includes('อุณหภูมิ')) {
+    return {
+      modelName: 'Aetheris 2.5 Pro Neural',
+      duration: `เสร็จสิ้นใน ${elapsedSec} วินาที`,
+      paragraphs: [
+        'สภาพอากาศปัจจุบันในกรุงเทพมหานครและปริมณฑล: อุณหภูมิเฉลี่ย <strong>26°C - 33°C</strong> ท้องฟ้าโปร่งถึงมีเมฆบางส่วน ความชื้นสัมพัทธ์ประมาณ 75%'
+      ],
+      suggestions: [
+        'พยากรณ์อากาศล่วงหน้า',
+        'สภาพอากาศต่างจังหวัด'
+      ]
+    };
+  }
 
   if (lower.includes('neon') || lower.includes('database') || lower.includes('ฐานข้อมูล')) {
     return {
@@ -198,24 +355,14 @@ function generateSimulatedDeepResponse(
         'นี่คือตัวอย่างการ query และ transaction ที่มีประสิทธิภาพสูง:'
       ],
       codeBlock: {
-        filename: 'neonDatabase.ts',
-        language: 'TypeScript',
-        code: `import { neon } from '@neondatabase/serverless';
-
-const sql = neon(process.env.DATABASE_URL!);
-
-export async function getUserSessions(userId: string) {
-  const sessions = await sql\`
-    SELECT * FROM sessions 
-    WHERE user_id = \${userId} 
-    ORDER BY updated_at DESC;
-  \`;
-  return sessions;
-}`
+        filename: 'dbConnection.ts',
+        language: 'TYPESCRIPT',
+        code: `import { neon } from '@neondatabase/serverless';\n\nconst sql = neon(process.env.DATABASE_URL!);\n\nexport async function getActiveUsers() {\n  return await sql\`SELECT id, email, tier FROM users WHERE tier = 'PRO' LIMIT 10\`;\n}`
       },
       suggestions: [
-        'วิธีเปิดใช้งาน Neon Database Branching',
-        'การทำ Connection Pooling ใน Serverless Environment'
+        'ขอตัวอย่างการทดสอบ Unit Test เพิ่มเติม',
+        'วิเคราะห์แนวทางการ Optimize ประสิทธิภาพ',
+        'การปรับใช้กับ Production Environment'
       ]
     };
   }
@@ -223,29 +370,15 @@ export async function getUserSessions(userId: string) {
   return {
     modelName: 'Aetheris 2.5 Pro Neural',
     duration: `เสร็จสิ้นใน ${elapsedSec} วินาที`,
-    thoughtSummary: `Thought for ${elapsedSec}s: ประมวลผลคำสั่ง "${prompt.slice(0, 32)}..." ด้วย Neural Graph Synthesis`,
-    thoughtDetails: 'วิเคราะห์โครงสร้างข้อมูล, ตรวจสอบความสอดคล้องทางตรรกะ และสังเคราะห์คำตอบแบบเรียลไทม์',
+    thoughtSummary: thinkingMode ? `Thought for ${elapsedSec}s: วิเคราะห์ข้อสอบถามและประมวลผลคำตอบ` : undefined,
+    thoughtDetails: 'ระบบประมวลผลคำตอบแบบกระชับ รวดเร็ว และประหยัดโทเคน',
     paragraphs: [
-      `ระบบได้ทำการวิเคราะห์คำถามของคุณเกี่ยวกับ <strong>"${prompt}"</strong> เรียบร้อยแล้ว`,
-      'นี่คือแนวทางที่แนะนำตามมาตรฐาน Best Practices ที่เน้นความเสถียร ประสิทธิภาพสูง และรองรับการขยายตัว (Scalability):'
-    ],
-    featureCards: [
-      {
-        title: 'High Throughput Architecture',
-        desc: 'ออกแบบให้ latency ต่ำและใช้ทรัพยากร compute คุ้มค่าที่สุด',
-        type: 'primary',
-        icon: 'speed'
-      },
-      {
-        title: 'Zero-Trust Security',
-        desc: 'เข้ารหัส end-to-end พร้อมรองรับ audit logging ตามมาตรฐาน SOC-2',
-        type: 'secondary',
-        icon: 'security'
-      }
+      `Aetheris AI พร้อมให้บริการตอบคำถาม เขียนโค้ด ออกแบบระบบ และวิเคราะห์ข้อมูลอย่างมีประสิทธิภาพสูงสุด`
     ],
     suggestions: [
-      'ขอตัวอย่างการนำไปใช้งานจริง (Implementation Example)',
-      'วิเคราะห์จุดที่อาจเกิด Performance Bottleneck'
+      'สอบถามแนวทางสถาปัตยกรรมระบบ',
+      'ขอตัวอย่างโค้ด TypeScript',
+      'สอบถามสภาพอากาศหรือวันเวลา'
     ]
   };
 }

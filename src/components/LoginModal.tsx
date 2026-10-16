@@ -45,17 +45,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     }
   };
 
-  const handleSocial = (provider: string) => {
-    const defaultEmail = `user.${provider.toLowerCase()}@aetheris.ai`;
-    const defaultName = `${provider} User`;
-    onLoginSuccess({
-      name: defaultName,
-      email: defaultEmail,
-      initials: provider.slice(0, 2).toUpperCase(),
-      tier: 'FREE',
-      isLoggedIn: true
-    });
-    onClose();
+  const handleSocial = (_provider: string) => {
+    setErrorMessage('ยังไม่ได้เชื่อมต่อระบบ');
   };
 
   return (

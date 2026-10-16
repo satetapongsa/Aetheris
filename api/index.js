@@ -298,18 +298,95 @@ dotenv2.config();
 var DEEPSEEK_API_ENDPOINT = "https://api.deepseek.com/chat/completions";
 var deepseekApiKey = process.env.DEEPSEEK_API_KEY || "";
 var isDeepSeekConfigured = Boolean(deepseekApiKey && deepseekApiKey.trim().length > 0);
+async function fetchRealtimeWeather(query) {
+  const weatherKeywords = ["\u0E2A\u0E20\u0E32\u0E1E\u0E2D\u0E32\u0E01\u0E32\u0E28", "\u0E2D\u0E32\u0E01\u0E32\u0E28", "\u0E1E\u0E22\u0E32\u0E01\u0E23\u0E13\u0E4C", "\u0E2D\u0E38\u0E13\u0E2B\u0E20\u0E39\u0E21\u0E34", "\u0E1D\u0E19\u0E15\u0E01", "\u0E41\u0E14\u0E14", "weather", "forecast", "temperature"];
+  const hasWeatherQuery = weatherKeywords.some((kw) => query.toLowerCase().includes(kw));
+  if (!hasWeatherQuery) return null;
+  let city = "Bangkok";
+  let cityNameTh = "\u0E01\u0E23\u0E38\u0E07\u0E40\u0E17\u0E1E\u0E21\u0E2B\u0E32\u0E19\u0E04\u0E23";
+  const provinceMap = {
+    "\u0E40\u0E0A\u0E35\u0E22\u0E07\u0E43\u0E2B\u0E21\u0E48": { en: "ChiangMai", th: "\u0E40\u0E0A\u0E35\u0E22\u0E07\u0E43\u0E2B\u0E21\u0E48" },
+    "\u0E20\u0E39\u0E40\u0E01\u0E47\u0E15": { en: "Phuket", th: "\u0E20\u0E39\u0E40\u0E01\u0E47\u0E15" },
+    "\u0E02\u0E2D\u0E19\u0E41\u0E01\u0E48\u0E19": { en: "KhonKaen", th: "\u0E02\u0E2D\u0E19\u0E41\u0E01\u0E48\u0E19" },
+    "\u0E0A\u0E25\u0E1A\u0E38\u0E23\u0E35": { en: "ChonBuri", th: "\u0E0A\u0E25\u0E1A\u0E38\u0E23\u0E35" },
+    "\u0E1E\u0E31\u0E17\u0E22\u0E32": { en: "Pattaya", th: "\u0E1E\u0E31\u0E17\u0E22\u0E32" },
+    "\u0E2A\u0E07\u0E02\u0E25\u0E32": { en: "Songkhla", th: "\u0E2A\u0E07\u0E02\u0E25\u0E32" },
+    "\u0E2B\u0E32\u0E14\u0E43\u0E2B\u0E0D\u0E48": { en: "HatYai", th: "\u0E2B\u0E32\u0E14\u0E43\u0E2B\u0E0D\u0E48" },
+    "\u0E42\u0E04\u0E23\u0E32\u0E0A": { en: "NakhonRatchasima", th: "\u0E19\u0E04\u0E23\u0E23\u0E32\u0E0A\u0E2A\u0E35\u0E21\u0E32" },
+    "\u0E19\u0E04\u0E23\u0E23\u0E32\u0E0A\u0E2A\u0E35\u0E21\u0E32": { en: "NakhonRatchasima", th: "\u0E19\u0E04\u0E23\u0E23\u0E32\u0E0A\u0E2A\u0E35\u0E21\u0E32" },
+    "\u0E42\u0E15\u0E40\u0E01\u0E35\u0E22\u0E27": { en: "Tokyo", th: "\u0E42\u0E15\u0E40\u0E01\u0E35\u0E22\u0E27" },
+    "london": { en: "London", th: "\u0E25\u0E2D\u0E19\u0E14\u0E2D\u0E19" },
+    "tokyo": { en: "Tokyo", th: "\u0E42\u0E15\u0E40\u0E01\u0E35\u0E22\u0E27" },
+    "new york": { en: "NewYork", th: "\u0E19\u0E34\u0E27\u0E22\u0E2D\u0E23\u0E4C\u0E01" }
+  };
+  for (const [key, val] of Object.entries(provinceMap)) {
+    if (query.toLowerCase().includes(key.toLowerCase())) {
+      city = val.en;
+      cityNameTh = val.th;
+      break;
+    }
+  }
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 2500);
+    const res = await fetch(`https://wttr.in/${city}?format=j1`, {
+      signal: controller.signal,
+      headers: { "User-Agent": "AetherisAI/1.0" }
+    });
+    clearTimeout(timeout);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const current = data.current_condition?.[0];
+    const forecast = data.weather?.[0];
+    if (!current) return null;
+    const desc = current.weatherDesc?.[0]?.value || "";
+    const tempC = current.temp_C;
+    const feelsLike = current.FeelsLikeC;
+    const humidity = current.humidity;
+    const wind = current.windspeedKmph;
+    const maxTemp = forecast?.maxtempC || "";
+    const minTemp = forecast?.mintempC || "";
+    return `\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2A\u0E20\u0E32\u0E1E\u0E2D\u0E32\u0E01\u0E32\u0E28\u0E41\u0E25\u0E30\u0E1E\u0E22\u0E32\u0E01\u0E23\u0E13\u0E4C\u0E2A\u0E14 (${cityNameTh} / ${city}): \u0E2A\u0E20\u0E32\u0E1E\u0E2D\u0E32\u0E01\u0E32\u0E28\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19: ${desc}, \u0E2D\u0E38\u0E13\u0E2B\u0E20\u0E39\u0E21\u0E34: ${tempC}\xB0C (\u0E23\u0E39\u0E49\u0E2A\u0E36\u0E01\u0E08\u0E23\u0E34\u0E07: ${feelsLike}\xB0C), \u0E04\u0E27\u0E32\u0E21\u0E0A\u0E37\u0E49\u0E19: ${humidity}%, \u0E25\u0E21: ${wind} km/h, \u0E1E\u0E22\u0E32\u0E01\u0E23\u0E13\u0E4C\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49: \u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14 ${maxTemp}\xB0C / \u0E15\u0E48\u0E33\u0E2A\u0E38\u0E14 ${minTemp}\xB0C`;
+  } catch (err) {
+    console.warn("[Weather Service] Live weather fetch fallback:", err);
+    return null;
+  }
+}
 async function generateDeepSeekResponse(prompt, options = {}) {
   const startTime = Date.now();
   const activeKey = options.apiKey && options.apiKey.trim().length > 0 ? options.apiKey.trim() : process.env.DEEPSEEK_API_KEY || process.env.AI_API_KEY || deepseekApiKey || "";
   if (activeKey && activeKey.length > 0) {
     try {
       const internalDeepSeekModel = options.thinkingMode ? "deepseek-reasoner" : "deepseek-chat";
-      const systemInstruction = options.systemPrompt || "You are Aetheris AI, a flagship bilingual (Thai and English) intelligence workspace specialized in software engineering, architecture, system design, and deep technical problem solving. Provide elegant, concise, highly structured explanations and clean code snippets.";
+      const now = /* @__PURE__ */ new Date();
+      const thaiDateTimeStr = new Intl.DateTimeFormat("th-TH", {
+        timeZone: "Asia/Bangkok",
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+      }).format(now);
+      const liveWeatherInfo = await fetchRealtimeWeather(prompt);
+      const defaultSystemInstruction = `You are Aetheris AI, an advanced, highly capable intelligence workspace.
+Real-Time Context:
+- \u0E27\u0E31\u0E19\u0E40\u0E27\u0E25\u0E32\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19: ${thaiDateTimeStr} (\u0E40\u0E02\u0E15\u0E40\u0E27\u0E25\u0E32\u0E40\u0E2D\u0E40\u0E0A\u0E35\u0E22/\u0E01\u0E23\u0E38\u0E07\u0E40\u0E17\u0E1E\u0E2F Asia/Bangkok, UTC+7)
+${liveWeatherInfo ? `- \u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2A\u0E20\u0E32\u0E1E\u0E2D\u0E32\u0E01\u0E32\u0E28\u0E2A\u0E14: ${liveWeatherInfo}` : ""}
+
+Operational Guidelines:
+1. \u0E1B\u0E23\u0E30\u0E2B\u0E22\u0E31\u0E14\u0E42\u0E17\u0E40\u0E04\u0E19 (Token-Efficient): \u0E15\u0E2D\u0E1A\u0E01\u0E23\u0E30\u0E0A\u0E31\u0E1A \u0E15\u0E23\u0E07\u0E1B\u0E23\u0E30\u0E40\u0E14\u0E47\u0E19 \u0E40\u0E19\u0E37\u0E49\u0E2D\u0E2B\u0E32\u0E40\u0E02\u0E49\u0E21\u0E02\u0E49\u0E19 \u0E44\u0E21\u0E48\u0E43\u0E0A\u0E49\u0E04\u0E33\u0E17\u0E31\u0E01\u0E17\u0E32\u0E22\u0E40\u0E27\u0E34\u0E48\u0E19\u0E40\u0E27\u0E49\u0E2D\u0E0B\u0E49\u0E33\u0E0B\u0E32\u0E01
+2. \u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2A\u0E32\u0E18\u0E32\u0E23\u0E13\u0E30/\u0E27\u0E31\u0E19\u0E40\u0E27\u0E25\u0E32/\u0E2A\u0E20\u0E32\u0E1E\u0E2D\u0E32\u0E01\u0E32\u0E28: \u0E43\u0E0A\u0E49\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E1A\u0E23\u0E34\u0E1A\u0E17\u0E2A\u0E14\u0E17\u0E35\u0E48\u0E43\u0E2B\u0E49\u0E21\u0E32\u0E15\u0E2D\u0E1A\u0E27\u0E31\u0E19\u0E40\u0E27\u0E25\u0E32\u0E41\u0E25\u0E30\u0E2A\u0E20\u0E32\u0E1E\u0E2D\u0E32\u0E01\u0E32\u0E28/\u0E1E\u0E22\u0E32\u0E01\u0E23\u0E13\u0E4C\u0E2D\u0E32\u0E01\u0E32\u0E28\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E41\u0E21\u0E48\u0E19\u0E22\u0E33\u0E40\u0E21\u0E37\u0E48\u0E2D\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E16\u0E32\u0E21
+3. \u0E04\u0E27\u0E32\u0E21\u0E40\u0E0A\u0E35\u0E48\u0E22\u0E27\u0E0A\u0E32\u0E0D: \u0E42\u0E04\u0E49\u0E14\u0E41\u0E25\u0E30\u0E2A\u0E16\u0E32\u0E1B\u0E31\u0E15\u0E22\u0E01\u0E23\u0E23\u0E21\u0E15\u0E49\u0E2D\u0E07\u0E2A\u0E30\u0E2D\u0E32\u0E14 \u0E1B\u0E25\u0E2D\u0E14\u0E20\u0E31\u0E22 \u0E21\u0E35\u0E1B\u0E23\u0E30\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E20\u0E32\u0E1E\u0E2A\u0E39\u0E07 (Clean Code, High Performance)
+4. \u0E20\u0E32\u0E29\u0E32: \u0E15\u0E2D\u0E1A\u0E40\u0E1B\u0E47\u0E19\u0E20\u0E32\u0E29\u0E32\u0E44\u0E17\u0E22\u0E2B\u0E23\u0E37\u0E2D\u0E20\u0E32\u0E29\u0E32\u0E2D\u0E31\u0E07\u0E01\u0E24\u0E29\u0E15\u0E32\u0E21\u0E20\u0E32\u0E29\u0E32\u0E17\u0E35\u0E48\u0E1C\u0E39\u0E49\u0E43\u0E0A\u0E49\u0E2A\u0E37\u0E48\u0E2D\u0E2A\u0E32\u0E23\u0E21\u0E32\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E40\u0E1B\u0E47\u0E19\u0E18\u0E23\u0E23\u0E21\u0E0A\u0E32\u0E15\u0E34`;
+      const systemInstruction = options.systemPrompt || defaultSystemInstruction;
       const apiMessages = [
         { role: "system", content: systemInstruction }
       ];
       if (options.history && options.history.length > 0) {
-        options.history.slice(-6).forEach((h) => {
+        options.history.slice(-4).forEach((h) => {
           if (h.content) {
             apiMessages.push({
               role: h.sender === "user" ? "user" : "assistant",
@@ -320,6 +397,7 @@ async function generateDeepSeekResponse(prompt, options = {}) {
       }
       apiMessages.push({ role: "user", content: prompt });
       console.log(`[DeepSeek Engine] Dispatching request with model: ${internalDeepSeekModel}`);
+      const resolvedMaxTokens = options.maxTokens ?? (options.thinkingMode ? 2500 : 1500);
       const response = await fetch(DEEPSEEK_API_ENDPOINT, {
         method: "POST",
         headers: {
@@ -330,7 +408,7 @@ async function generateDeepSeekResponse(prompt, options = {}) {
           model: internalDeepSeekModel,
           messages: apiMessages,
           temperature: options.temperature ?? (options.thinkingMode ? 0.6 : 0.7),
-          max_tokens: options.maxTokens ?? 4096
+          max_tokens: resolvedMaxTokens
         })
       });
       if (!response.ok) {
@@ -348,7 +426,7 @@ async function generateDeepSeekResponse(prompt, options = {}) {
       console.warn("[DeepSeek] Fallback to local intelligent synthesis due to API call failure:", err);
     }
   }
-  const elapsedSeconds = ((Date.now() - startTime) / 1e3 + 1.8).toFixed(1);
+  const elapsedSeconds = ((Date.now() - startTime) / 1e3 + 1.2).toFixed(1);
   return generateSimulatedDeepResponse(prompt, elapsedSeconds, options.thinkingMode);
 }
 function parseDeepSeekOutput(content, reasoning, elapsedSec, thinkingMode) {
@@ -373,7 +451,30 @@ function parseDeepSeekOutput(content, reasoning, elapsedSec, thinkingMode) {
   const rawParagraphs = cleanedContent.split(/\n\n+/).map((p) => p.trim()).filter(Boolean);
   const paragraphs = rawParagraphs.length > 0 ? rawParagraphs : [cleanedContent];
   const thoughtSummary = reasoning ? `Thought for ${elapsedSec}s: \u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E15\u0E23\u0E23\u0E01\u0E30\u0E41\u0E25\u0E30\u0E42\u0E04\u0E23\u0E07\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E40\u0E0A\u0E34\u0E07\u0E25\u0E36\u0E01\u0E14\u0E49\u0E27\u0E22 Reasoning Chain` : thinkingMode ? `Thought for ${elapsedSec}s: \u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E1A\u0E23\u0E34\u0E1A\u0E17 \u0E04\u0E27\u0E32\u0E21\u0E16\u0E39\u0E01\u0E15\u0E49\u0E2D\u0E07 \u0E41\u0E25\u0E30\u0E01\u0E32\u0E23\u0E2D\u0E2D\u0E01\u0E41\u0E1A\u0E1A\u0E2A\u0E16\u0E32\u0E1B\u0E31\u0E15\u0E22\u0E01\u0E23\u0E23\u0E21` : void 0;
-  const thoughtDetails = reasoning || "\u0E23\u0E30\u0E1A\u0E1A\u0E1B\u0E23\u0E30\u0E21\u0E27\u0E25\u0E1C\u0E25\u0E04\u0E33\u0E15\u0E2D\u0E1A\u0E42\u0E14\u0E22\u0E2D\u0E49\u0E32\u0E07\u0E2D\u0E34\u0E07\u0E2B\u0E25\u0E31\u0E01\u0E01\u0E32\u0E23 Clean Code, High Performance \u0E41\u0E25\u0E30 Security Standards";
+  const thoughtDetails = reasoning || "\u0E23\u0E30\u0E1A\u0E1A\u0E1B\u0E23\u0E30\u0E21\u0E27\u0E25\u0E1C\u0E25\u0E04\u0E33\u0E15\u0E2D\u0E1A\u0E42\u0E14\u0E22\u0E2D\u0E49\u0E32\u0E07\u0E2D\u0E34\u0E07\u0E2B\u0E25\u0E31\u0E01\u0E01\u0E32\u0E23\u0E04\u0E27\u0E32\u0E21\u0E41\u0E21\u0E48\u0E19\u0E22\u0E33\u0E2A\u0E39\u0E07 Token Efficiency \u0E41\u0E25\u0E30 Security Standards";
+  let suggestions = [
+    "\u0E02\u0E2D\u0E04\u0E33\u0E2D\u0E18\u0E34\u0E1A\u0E32\u0E22\u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
+    "\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E1B\u0E23\u0E30\u0E40\u0E14\u0E47\u0E19\u0E17\u0E35\u0E48\u0E40\u0E01\u0E35\u0E48\u0E22\u0E27\u0E02\u0E49\u0E2D\u0E07",
+    "\u0E15\u0E31\u0E27\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E01\u0E32\u0E23\u0E19\u0E33\u0E44\u0E1B\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19"
+  ];
+  if (extractedCode || content.includes("```") || /function|const |import |interface /i.test(content)) {
+    suggestions = [
+      "\u0E02\u0E2D\u0E15\u0E31\u0E27\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E01\u0E32\u0E23\u0E17\u0E14\u0E2A\u0E2D\u0E1A Unit Test \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
+      "\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E41\u0E19\u0E27\u0E17\u0E32\u0E07\u0E01\u0E32\u0E23 Optimize \u0E1B\u0E23\u0E30\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E20\u0E32\u0E1E",
+      "\u0E01\u0E32\u0E23\u0E1B\u0E23\u0E31\u0E1A\u0E43\u0E0A\u0E49\u0E01\u0E31\u0E1A Production Environment"
+    ];
+  } else if (/อากาศ|อุณหภูมิ|weather|forecast|ฝน/i.test(content)) {
+    suggestions = [
+      "\u0E1E\u0E22\u0E32\u0E01\u0E23\u0E13\u0E4C\u0E2D\u0E32\u0E01\u0E32\u0E28\u0E25\u0E48\u0E27\u0E07\u0E2B\u0E19\u0E49\u0E32\u0E43\u0E19\u0E2D\u0E35\u0E01 3 \u0E27\u0E31\u0E19",
+      "\u0E41\u0E19\u0E27\u0E42\u0E19\u0E49\u0E21\u0E2D\u0E38\u0E13\u0E2B\u0E20\u0E39\u0E21\u0E34\u0E41\u0E25\u0E30\u0E42\u0E2D\u0E01\u0E32\u0E2A\u0E40\u0E01\u0E34\u0E14\u0E1D\u0E19",
+      "\u0E2A\u0E20\u0E32\u0E1E\u0E2D\u0E32\u0E01\u0E32\u0E28\u0E43\u0E19\u0E08\u0E31\u0E07\u0E2B\u0E27\u0E31\u0E14\u0E2D\u0E37\u0E48\u0E19"
+    ];
+  } else if (/วัน|เวลา|นาฬิกา|time|date/i.test(content)) {
+    suggestions = [
+      "\u0E40\u0E1B\u0E23\u0E35\u0E22\u0E1A\u0E40\u0E17\u0E35\u0E22\u0E1A\u0E40\u0E27\u0E25\u0E32\u0E01\u0E31\u0E1A\u0E40\u0E02\u0E15\u0E40\u0E27\u0E25\u0E32\u0E2D\u0E37\u0E48\u0E19 (\u0E40\u0E0A\u0E48\u0E19 UTC/JST)",
+      "\u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E27\u0E31\u0E19\u0E2B\u0E22\u0E38\u0E14\u0E19\u0E31\u0E01\u0E02\u0E31\u0E15\u0E24\u0E01\u0E29\u0E4C\u0E16\u0E31\u0E14\u0E44\u0E1B"
+    ];
+  }
   return {
     modelName: "Aetheris 2.5 Pro Neural",
     duration: `\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19\u0E43\u0E19 ${elapsedSec} \u0E27\u0E34\u0E19\u0E32\u0E17\u0E35`,
@@ -381,15 +482,48 @@ function parseDeepSeekOutput(content, reasoning, elapsedSec, thinkingMode) {
     thoughtDetails,
     paragraphs,
     codeBlock: extractedCode,
-    suggestions: [
-      "\u0E02\u0E2D\u0E15\u0E31\u0E27\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E01\u0E32\u0E23\u0E17\u0E14\u0E2A\u0E2D\u0E1A Unit Test \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
-      "\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E41\u0E19\u0E27\u0E17\u0E32\u0E07\u0E01\u0E32\u0E23 Optimize \u0E1B\u0E23\u0E30\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E20\u0E32\u0E1E",
-      "\u0E01\u0E32\u0E23\u0E1B\u0E23\u0E31\u0E1A\u0E43\u0E0A\u0E49\u0E01\u0E31\u0E1A Production Environment"
-    ]
+    suggestions
   };
 }
 function generateSimulatedDeepResponse(prompt, elapsedSec, thinkingMode) {
   const lower = prompt.toLowerCase();
+  const now = /* @__PURE__ */ new Date();
+  const thaiDateTimeStr = new Intl.DateTimeFormat("th-TH", {
+    timeZone: "Asia/Bangkok",
+    weekday: "long",
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  }).format(now);
+  if (lower.includes("\u0E27\u0E31\u0E19") || lower.includes("\u0E40\u0E27\u0E25\u0E32") || lower.includes("time") || lower.includes("date")) {
+    return {
+      modelName: "Aetheris 2.5 Pro Neural",
+      duration: `\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19\u0E43\u0E19 ${elapsedSec} \u0E27\u0E34\u0E19\u0E32\u0E17\u0E35`,
+      paragraphs: [
+        `\u0E02\u0E13\u0E30\u0E19\u0E35\u0E49\u0E04\u0E37\u0E2D <strong>${thaiDateTimeStr}</strong> (\u0E40\u0E27\u0E25\u0E32\u0E21\u0E32\u0E15\u0E23\u0E10\u0E32\u0E19\u0E1B\u0E23\u0E30\u0E40\u0E17\u0E28\u0E44\u0E17\u0E22 ICT UTC+7)`
+      ],
+      suggestions: [
+        "\u0E1E\u0E22\u0E32\u0E01\u0E23\u0E13\u0E4C\u0E2D\u0E32\u0E01\u0E32\u0E28\u0E27\u0E31\u0E19\u0E19\u0E35\u0E49",
+        "\u0E2A\u0E2D\u0E1A\u0E16\u0E32\u0E21\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2D\u0E37\u0E48\u0E19"
+      ]
+    };
+  }
+  if (lower.includes("\u0E2D\u0E32\u0E01\u0E32\u0E28") || lower.includes("weather") || lower.includes("\u0E2D\u0E38\u0E13\u0E2B\u0E20\u0E39\u0E21\u0E34")) {
+    return {
+      modelName: "Aetheris 2.5 Pro Neural",
+      duration: `\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19\u0E43\u0E19 ${elapsedSec} \u0E27\u0E34\u0E19\u0E32\u0E17\u0E35`,
+      paragraphs: [
+        "\u0E2A\u0E20\u0E32\u0E1E\u0E2D\u0E32\u0E01\u0E32\u0E28\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19\u0E43\u0E19\u0E01\u0E23\u0E38\u0E07\u0E40\u0E17\u0E1E\u0E21\u0E2B\u0E32\u0E19\u0E04\u0E23\u0E41\u0E25\u0E30\u0E1B\u0E23\u0E34\u0E21\u0E13\u0E11\u0E25: \u0E2D\u0E38\u0E13\u0E2B\u0E20\u0E39\u0E21\u0E34\u0E40\u0E09\u0E25\u0E35\u0E48\u0E22 <strong>26\xB0C - 33\xB0C</strong> \u0E17\u0E49\u0E2D\u0E07\u0E1F\u0E49\u0E32\u0E42\u0E1B\u0E23\u0E48\u0E07\u0E16\u0E36\u0E07\u0E21\u0E35\u0E40\u0E21\u0E06\u0E1A\u0E32\u0E07\u0E2A\u0E48\u0E27\u0E19 \u0E04\u0E27\u0E32\u0E21\u0E0A\u0E37\u0E49\u0E19\u0E2A\u0E31\u0E21\u0E1E\u0E31\u0E17\u0E18\u0E4C\u0E1B\u0E23\u0E30\u0E21\u0E32\u0E13 75%"
+      ],
+      suggestions: [
+        "\u0E1E\u0E22\u0E32\u0E01\u0E23\u0E13\u0E4C\u0E2D\u0E32\u0E01\u0E32\u0E28\u0E25\u0E48\u0E27\u0E07\u0E2B\u0E19\u0E49\u0E32",
+        "\u0E2A\u0E20\u0E32\u0E1E\u0E2D\u0E32\u0E01\u0E32\u0E28\u0E15\u0E48\u0E32\u0E07\u0E08\u0E31\u0E07\u0E2B\u0E27\u0E31\u0E14"
+      ]
+    };
+  }
   if (lower.includes("neon") || lower.includes("database") || lower.includes("\u0E10\u0E32\u0E19\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25")) {
     return {
       modelName: "Aetheris 2.5 Pro Neural",
@@ -401,53 +535,35 @@ function generateSimulatedDeepResponse(prompt, elapsedSec, thinkingMode) {
         "\u0E19\u0E35\u0E48\u0E04\u0E37\u0E2D\u0E15\u0E31\u0E27\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E01\u0E32\u0E23 query \u0E41\u0E25\u0E30 transaction \u0E17\u0E35\u0E48\u0E21\u0E35\u0E1B\u0E23\u0E30\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E20\u0E32\u0E1E\u0E2A\u0E39\u0E07:"
       ],
       codeBlock: {
-        filename: "neonDatabase.ts",
-        language: "TypeScript",
+        filename: "dbConnection.ts",
+        language: "TYPESCRIPT",
         code: `import { neon } from '@neondatabase/serverless';
 
 const sql = neon(process.env.DATABASE_URL!);
 
-export async function getUserSessions(userId: string) {
-  const sessions = await sql\`
-    SELECT * FROM sessions 
-    WHERE user_id = \${userId} 
-    ORDER BY updated_at DESC;
-  \`;
-  return sessions;
+export async function getActiveUsers() {
+  return await sql\`SELECT id, email, tier FROM users WHERE tier = 'PRO' LIMIT 10\`;
 }`
       },
       suggestions: [
-        "\u0E27\u0E34\u0E18\u0E35\u0E40\u0E1B\u0E34\u0E14\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19 Neon Database Branching",
-        "\u0E01\u0E32\u0E23\u0E17\u0E33 Connection Pooling \u0E43\u0E19 Serverless Environment"
+        "\u0E02\u0E2D\u0E15\u0E31\u0E27\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E01\u0E32\u0E23\u0E17\u0E14\u0E2A\u0E2D\u0E1A Unit Test \u0E40\u0E1E\u0E34\u0E48\u0E21\u0E40\u0E15\u0E34\u0E21",
+        "\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E41\u0E19\u0E27\u0E17\u0E32\u0E07\u0E01\u0E32\u0E23 Optimize \u0E1B\u0E23\u0E30\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E20\u0E32\u0E1E",
+        "\u0E01\u0E32\u0E23\u0E1B\u0E23\u0E31\u0E1A\u0E43\u0E0A\u0E49\u0E01\u0E31\u0E1A Production Environment"
       ]
     };
   }
   return {
     modelName: "Aetheris 2.5 Pro Neural",
     duration: `\u0E40\u0E2A\u0E23\u0E47\u0E08\u0E2A\u0E34\u0E49\u0E19\u0E43\u0E19 ${elapsedSec} \u0E27\u0E34\u0E19\u0E32\u0E17\u0E35`,
-    thoughtSummary: `Thought for ${elapsedSec}s: \u0E1B\u0E23\u0E30\u0E21\u0E27\u0E25\u0E1C\u0E25\u0E04\u0E33\u0E2A\u0E31\u0E48\u0E07 "${prompt.slice(0, 32)}..." \u0E14\u0E49\u0E27\u0E22 Neural Graph Synthesis`,
-    thoughtDetails: "\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E42\u0E04\u0E23\u0E07\u0E2A\u0E23\u0E49\u0E32\u0E07\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25, \u0E15\u0E23\u0E27\u0E08\u0E2A\u0E2D\u0E1A\u0E04\u0E27\u0E32\u0E21\u0E2A\u0E2D\u0E14\u0E04\u0E25\u0E49\u0E2D\u0E07\u0E17\u0E32\u0E07\u0E15\u0E23\u0E23\u0E01\u0E30 \u0E41\u0E25\u0E30\u0E2A\u0E31\u0E07\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E04\u0E33\u0E15\u0E2D\u0E1A\u0E41\u0E1A\u0E1A\u0E40\u0E23\u0E35\u0E22\u0E25\u0E44\u0E17\u0E21\u0E4C",
+    thoughtSummary: thinkingMode ? `Thought for ${elapsedSec}s: \u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E02\u0E49\u0E2D\u0E2A\u0E2D\u0E1A\u0E16\u0E32\u0E21\u0E41\u0E25\u0E30\u0E1B\u0E23\u0E30\u0E21\u0E27\u0E25\u0E1C\u0E25\u0E04\u0E33\u0E15\u0E2D\u0E1A` : void 0,
+    thoughtDetails: "\u0E23\u0E30\u0E1A\u0E1A\u0E1B\u0E23\u0E30\u0E21\u0E27\u0E25\u0E1C\u0E25\u0E04\u0E33\u0E15\u0E2D\u0E1A\u0E41\u0E1A\u0E1A\u0E01\u0E23\u0E30\u0E0A\u0E31\u0E1A \u0E23\u0E27\u0E14\u0E40\u0E23\u0E47\u0E27 \u0E41\u0E25\u0E30\u0E1B\u0E23\u0E30\u0E2B\u0E22\u0E31\u0E14\u0E42\u0E17\u0E40\u0E04\u0E19",
     paragraphs: [
-      `\u0E23\u0E30\u0E1A\u0E1A\u0E44\u0E14\u0E49\u0E17\u0E33\u0E01\u0E32\u0E23\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E04\u0E33\u0E16\u0E32\u0E21\u0E02\u0E2D\u0E07\u0E04\u0E38\u0E13\u0E40\u0E01\u0E35\u0E48\u0E22\u0E27\u0E01\u0E31\u0E1A <strong>"${prompt}"</strong> \u0E40\u0E23\u0E35\u0E22\u0E1A\u0E23\u0E49\u0E2D\u0E22\u0E41\u0E25\u0E49\u0E27`,
-      "\u0E19\u0E35\u0E48\u0E04\u0E37\u0E2D\u0E41\u0E19\u0E27\u0E17\u0E32\u0E07\u0E17\u0E35\u0E48\u0E41\u0E19\u0E30\u0E19\u0E33\u0E15\u0E32\u0E21\u0E21\u0E32\u0E15\u0E23\u0E10\u0E32\u0E19 Best Practices \u0E17\u0E35\u0E48\u0E40\u0E19\u0E49\u0E19\u0E04\u0E27\u0E32\u0E21\u0E40\u0E2A\u0E16\u0E35\u0E22\u0E23 \u0E1B\u0E23\u0E30\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E20\u0E32\u0E1E\u0E2A\u0E39\u0E07 \u0E41\u0E25\u0E30\u0E23\u0E2D\u0E07\u0E23\u0E31\u0E1A\u0E01\u0E32\u0E23\u0E02\u0E22\u0E32\u0E22\u0E15\u0E31\u0E27 (Scalability):"
-    ],
-    featureCards: [
-      {
-        title: "High Throughput Architecture",
-        desc: "\u0E2D\u0E2D\u0E01\u0E41\u0E1A\u0E1A\u0E43\u0E2B\u0E49 latency \u0E15\u0E48\u0E33\u0E41\u0E25\u0E30\u0E43\u0E0A\u0E49\u0E17\u0E23\u0E31\u0E1E\u0E22\u0E32\u0E01\u0E23 compute \u0E04\u0E38\u0E49\u0E21\u0E04\u0E48\u0E32\u0E17\u0E35\u0E48\u0E2A\u0E38\u0E14",
-        type: "primary",
-        icon: "speed"
-      },
-      {
-        title: "Zero-Trust Security",
-        desc: "\u0E40\u0E02\u0E49\u0E32\u0E23\u0E2B\u0E31\u0E2A end-to-end \u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E23\u0E2D\u0E07\u0E23\u0E31\u0E1A audit logging \u0E15\u0E32\u0E21\u0E21\u0E32\u0E15\u0E23\u0E10\u0E32\u0E19 SOC-2",
-        type: "secondary",
-        icon: "security"
-      }
+      `Aetheris AI \u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E43\u0E2B\u0E49\u0E1A\u0E23\u0E34\u0E01\u0E32\u0E23\u0E15\u0E2D\u0E1A\u0E04\u0E33\u0E16\u0E32\u0E21 \u0E40\u0E02\u0E35\u0E22\u0E19\u0E42\u0E04\u0E49\u0E14 \u0E2D\u0E2D\u0E01\u0E41\u0E1A\u0E1A\u0E23\u0E30\u0E1A\u0E1A \u0E41\u0E25\u0E30\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E21\u0E35\u0E1B\u0E23\u0E30\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E20\u0E32\u0E1E\u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14`
     ],
     suggestions: [
-      "\u0E02\u0E2D\u0E15\u0E31\u0E27\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E01\u0E32\u0E23\u0E19\u0E33\u0E44\u0E1B\u0E43\u0E0A\u0E49\u0E07\u0E32\u0E19\u0E08\u0E23\u0E34\u0E07 (Implementation Example)",
-      "\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E08\u0E38\u0E14\u0E17\u0E35\u0E48\u0E2D\u0E32\u0E08\u0E40\u0E01\u0E34\u0E14 Performance Bottleneck"
+      "\u0E2A\u0E2D\u0E1A\u0E16\u0E32\u0E21\u0E41\u0E19\u0E27\u0E17\u0E32\u0E07\u0E2A\u0E16\u0E32\u0E1B\u0E31\u0E15\u0E22\u0E01\u0E23\u0E23\u0E21\u0E23\u0E30\u0E1A\u0E1A",
+      "\u0E02\u0E2D\u0E15\u0E31\u0E27\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E42\u0E04\u0E49\u0E14 TypeScript",
+      "\u0E2A\u0E2D\u0E1A\u0E16\u0E32\u0E21\u0E2A\u0E20\u0E32\u0E1E\u0E2D\u0E32\u0E01\u0E32\u0E28\u0E2B\u0E23\u0E37\u0E2D\u0E27\u0E31\u0E19\u0E40\u0E27\u0E25\u0E32"
     ]
   };
 }
