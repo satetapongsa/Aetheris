@@ -222,8 +222,6 @@ export function App() {
         return s;
       })
     );
-
-    showToast(`ประมวลผลสำเร็จด้วยโมเดล ${aiResponse.modelName || 'Aetheris 2.5 Pro Neural'}`, 'success', 'neurology');
   };
 
   const generateContextualResponse = (prompt: string): Message => {
@@ -470,6 +468,7 @@ export async function registerAction(prevState: any, formData: FormData) {
           }}
           isVoiceRecording={isVoiceRecording}
           onToggleVoice={handleVoiceToggle}
+          isStreaming={isStreaming}
         />
       </main>
 

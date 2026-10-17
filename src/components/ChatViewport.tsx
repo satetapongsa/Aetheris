@@ -85,6 +85,20 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
     });
   };
 
+  const formatMarkdown = (text: string): string => {
+    if (!text) return '';
+    let res = text;
+    // Bold **text**
+    res = res.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    // Italic *text*
+    res = res.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    // Inline code `code`
+    res = res.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+    // Bullet lines starting with -
+    res = res.replace(/^-\s+(.+)$/gm, '• $1');
+    return res;
+  };
+
   const hasMessages = session && session.messages && session.messages.length > 0;
 
   return (
@@ -277,7 +291,7 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
                     {/* Text Content */}
                     <div className="ai-text-content">
                       {msg.paragraphs?.map((p, pIdx) => (
-                        <p key={pIdx} dangerouslySetInnerHTML={{ __html: p }} />
+                        <p key={pIdx} dangerouslySetInnerHTML={{ __html: formatMarkdown(p) }} />
                       ))}
 
                       {/* Feature Cards Grid */}

@@ -18,6 +18,7 @@ interface PromptDeckProps {
   onToggleDeepReasoning: () => void;
   isVoiceRecording: boolean;
   onToggleVoice: () => void;
+  isStreaming?: boolean;
 }
 
 export const PromptDeck: React.FC<PromptDeckProps> = ({
@@ -32,7 +33,8 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
   deepReasoningActive,
   onToggleDeepReasoning,
   isVoiceRecording,
-  onToggleVoice
+  onToggleVoice,
+  isStreaming = false
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -48,12 +50,14 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      onSend();
+      if (!isStreaming) {
+        onSend();
+      }
     }
   };
 
   const estimatedTokens = Math.max(18, Math.round(promptText.length / 3.5) + 18);
-  const canSend = promptText.trim().length > 0 || attachedFiles.length > 0;
+  const canSend = !isStreaming && (promptText.trim().length > 0 || attachedFiles.length > 0);
 
   return (
     <footer className="prompt-deck-container">
@@ -159,13 +163,15 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
               </div>
               <button
                 type="button"
-                className={`btn-send ${canSend ? 'can-send' : ''}`}
+                className={`btn-send ${canSend ? 'can-send' : ''} ${isStreaming ? 'streaming' : ''}`}
                 onClick={onSend}
                 disabled={!canSend}
-                title="ส่งข้อความ (Enter)"
+                title={isStreaming ? 'กำลังประมวลผลคำตอบ...' : 'ส่งข้อความ (Enter)'}
                 aria-label="Send message"
               >
-                <span className="material-symbols-outlined">arrow_upward</span>
+                <span className={`material-symbols-outlined ${isStreaming ? 'spin-icon' : ''}`}>
+                  {isStreaming ? 'progress_activity' : 'arrow_upward'}
+                </span>
               </button>
             </div>
           </div>

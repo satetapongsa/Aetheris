@@ -1176,6 +1176,8 @@ html, body {
 
 .ai-text-content p {
   margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .inline-code {
