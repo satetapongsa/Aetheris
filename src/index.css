@@ -1078,6 +1078,48 @@ html, body {
   color: var(--text-white);
 }
 
+/* Founder Credit Box (Settings Modal) */
+.founder-credit-box {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  padding: 18px 16px;
+  text-align: center;
+  margin: 14px 0 6px;
+  user-select: none;
+}
+
+.founder-credit-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #71717a;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 6px;
+}
+
+.founder-credit-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #8b8b99;
+  letter-spacing: -0.3px;
+  font-family: var(--font-mono, monospace);
+  margin-bottom: 10px;
+}
+
+.founder-credit-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  color: #71717a;
+}
+
 /* Auth Modal Form */
 .auth-header {
   text-align: center;

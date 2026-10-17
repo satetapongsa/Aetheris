@@ -38,9 +38,9 @@ export function App() {
   const [checkoutModalOpen, setCheckoutModalOpen] = useState<boolean>(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState<boolean>(false);
 
-  // Parameters
-  const [parameters, setParameters] = useState<ModelParameterState>({
-    temperature: 0.7,
+  // Fixed Standard System Parameters (Defined by Founder, locked)
+  const [parameters] = useState<ModelParameterState>({
+    temperature: 0.75, // standard 7-8 range
     topP: 0.95,
     maxTokens: 4096,
     systemPrompt: '',
@@ -324,11 +324,6 @@ export function App() {
       <SettingsModal
         isOpen={settingsModalOpen}
         onClose={() => setSettingsModalOpen(false)}
-        parameters={parameters}
-        onSave={(params) => {
-          setParameters(params);
-          showToast('บันทึกการตั้งค่าเรียบร้อยแล้ว', 'success', 'check');
-        }}
       />
 
       {/* Toast Notification Container */}
