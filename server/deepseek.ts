@@ -135,7 +135,7 @@ export async function generateDeepSeekResponse(
       const liveWeatherInfo = await fetchRealtimeWeather(prompt);
 
       const defaultSystemInstruction = 
-`You are Aetheris AI, an advanced, highly capable intelligence workspace.
+`You are Aetheris, an advanced, highly capable conversational assistant.
 Real-Time Context:
 - วันเวลาปัจจุบัน: ${thaiDateTimeStr} (เขตเวลาเอเชีย/กรุงเทพฯ Asia/Bangkok, UTC+7)
 ${liveWeatherInfo ? `- ข้อมูลสภาพอากาศสด: ${liveWeatherInfo}` : ''}
@@ -373,7 +373,7 @@ function generateSimulatedDeepResponse(
     thoughtSummary: thinkingMode ? `Thought for ${elapsedSec}s: วิเคราะห์ข้อสอบถามและประมวลผลคำตอบ` : undefined,
     thoughtDetails: 'ระบบประมวลผลคำตอบแบบกระชับ รวดเร็ว และประหยัดโทเคน',
     paragraphs: [
-      `Aetheris AI พร้อมให้บริการตอบคำถาม เขียนโค้ด ออกแบบระบบ และวิเคราะห์ข้อมูลอย่างมีประสิทธิภาพสูงสุด`
+      `Aetheris พร้อมให้บริการตอบคำถาม เขียนโค้ด ออกแบบระบบ และวิเคราะห์ข้อมูลอย่างมีประสิทธิภาพสูงสุด`
     ],
     suggestions: [
       'สอบถามแนวทางสถาปัตยกรรมระบบ',

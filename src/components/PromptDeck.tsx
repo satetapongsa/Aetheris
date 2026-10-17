@@ -39,11 +39,11 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-resize textarea
+  // Auto-resize textarea to fit text naturally up to 200px
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 180)}px`;
+      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
     }
   }, [promptText]);
 
@@ -56,12 +56,11 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
     }
   };
 
-  const estimatedTokens = Math.max(18, Math.round(promptText.length / 3.5) + 18);
   const canSend = !isStreaming && (promptText.trim().length > 0 || attachedFiles.length > 0);
 
   return (
-    <footer className="prompt-deck-container">
-      <div className="prompt-deck-wrapper">
+    <footer className="gpt-input-dock">
+      <div className="gpt-input-wrapper">
         {/* Attached Files Preview Bar */}
         {attachedFiles.length > 0 && (
           <div className="attachment-preview-bar">
@@ -86,26 +85,26 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
           </div>
         )}
 
-        {/* Floating Input Box */}
-        <div className="floating-prompt-box">
+        {/* Floating Input Box (GPT Capsule) */}
+        <div className="gpt-input-box">
           <textarea
             ref={textareaRef}
-            className="prompt-textarea custom-scroll"
-            placeholder="พิมพ์คำถามหรือป้อนคำสั่งให้ Aetheris AI..."
+            className="gpt-textarea custom-scroll"
+            placeholder="ถามอะไรก็ได้กับ Aetheris..."
             rows={1}
             value={promptText}
             onChange={(e) => onPromptChange(e.target.value)}
             onKeyDown={handleKeyDown}
           />
 
-          {/* Bottom Toolbar */}
-          <div className="prompt-toolbar">
-            <div className="toolset-left">
+          {/* Bottom Toolbar inside the capsule */}
+          <div className="gpt-input-toolbar">
+            <div className="gpt-toolbar-left">
               {/* Attach File */}
               <button
                 type="button"
-                className="btn-prompt-tool"
-                title="แนบไฟล์หรือโค้ด"
+                className="btn-gpt-tool"
+                title="แนบไฟล์หรือรูปภาพ"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <span className="material-symbols-outlined">attach_file</span>
@@ -125,48 +124,44 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
               {/* Web Search Toggle */}
               <button
                 type="button"
-                className={`tool-pill ${webSearchActive ? 'active' : ''}`}
+                className={`gpt-pill-tool ${webSearchActive ? 'active' : ''}`}
                 onClick={onToggleWebSearch}
-                title="สลับการค้นหาข้อมูลบนเว็บ"
+                title="ค้นหาเว็บ (Web Search)"
               >
                 <span className="material-symbols-outlined">public</span>
-                <span className="tool-pill-label">Web Search</span>
+                <span>ค้นหาเว็บ</span>
               </button>
 
               {/* Deep Reasoning Toggle */}
               <button
                 type="button"
-                className={`tool-pill ${deepReasoningActive ? 'active' : ''}`}
+                className={`gpt-pill-tool ${deepReasoningActive ? 'active' : ''}`}
                 onClick={onToggleDeepReasoning}
-                title="สลับโหมดคิดวิเคราะห์หลายขั้นตอน"
+                title="โหมดคิดวิเคราะห์เชิงลึก"
               >
-                <span className="material-symbols-outlined">neurology</span>
-                <span className="tool-pill-label">Deep Reasoning</span>
+                <span className="material-symbols-outlined">psychology</span>
+                <span>คิดเชิงลึก</span>
               </button>
 
               {/* Voice Input */}
               <button
                 type="button"
-                className={`btn-prompt-tool ${isVoiceRecording ? 'active-pulse' : ''}`}
-                title="พิมพ์ด้วยเสียง (Voice Input)"
+                className={`btn-gpt-tool ${isVoiceRecording ? 'active-pulse' : ''}`}
+                title="พิมพ์ด้วยเสียง"
                 onClick={onToggleVoice}
               >
                 <span className="material-symbols-outlined">mic</span>
               </button>
             </div>
 
-            {/* Right: Token Counter & Send Button */}
-            <div className="toolset-right">
-              <div className="token-meter">
-                <span className="token-dot"></span>
-                <span>{estimatedTokens.toLocaleString()} tok</span>
-              </div>
+            {/* Right: Send Button */}
+            <div className="gpt-toolbar-right">
               <button
                 type="button"
-                className={`btn-send ${canSend ? 'can-send' : ''} ${isStreaming ? 'streaming' : ''}`}
+                className={`btn-gpt-send ${canSend ? 'active' : ''}`}
                 onClick={onSend}
                 disabled={!canSend}
-                title={isStreaming ? 'กำลังประมวลผลคำตอบ...' : 'ส่งข้อความ (Enter)'}
+                title={isStreaming ? 'กำลังตอบคำถาม...' : 'ส่งข้อความ (Enter)'}
                 aria-label="Send message"
               >
                 <span className={`material-symbols-outlined ${isStreaming ? 'spin-icon' : ''}`}>
@@ -178,13 +173,8 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
         </div>
 
         {/* Disclaimer Note */}
-        <div className="disclaimer-row">
-          <span>Aetheris AI อาจแสดงข้อมูลที่ไม่ถูกต้อง กรุณาตรวจสอบข้อมูลสำคัญ</span>
-          <span className="disclaimer-divider">•</span>
-          <span className="security-chip">
-            <span className="material-symbols-outlined text-success">verified_user</span>
-            <span>SOC2 Type II Encrypted</span>
-          </span>
+        <div className="gpt-disclaimer">
+          Aetheris อาจแสดงข้อมูลที่ไม่ถูกต้อง กรุณาตรวจสอบข้อมูลสำคัญ
         </div>
       </div>
     </footer>

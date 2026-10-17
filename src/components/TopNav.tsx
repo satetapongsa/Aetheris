@@ -7,19 +7,15 @@ interface TopNavProps {
   onSelectModel: (model: ModelId) => void;
   thinkingMode: boolean;
   onToggleThinkingMode: () => void;
-  latencyMs: number;
-  onOpenNodes: () => void;
-  onOpenAnalytics: () => void;
-  onShareSession: () => void;
   onOpenCheckout: () => void;
   onOpenLogin: () => void;
   currentUser?: { name: string; isLoggedIn: boolean };
 }
 
-const MODEL_NAMES: Record<ModelId, { full: string; short: string }> = {
-  'aetheris-2.5-pro': { full: 'Aetheris 2.5 Pro Neural', short: 'Aetheris 2.5 Pro' },
-  'aetheris-deep-reasoning': { full: 'Aetheris Deep Reasoning', short: 'Deep Reasoning' },
-  'aetheris-fast-flash': { full: 'Aetheris Fast Flash', short: 'Fast Flash' }
+const MODEL_LABELS: Record<ModelId, { name: string; desc: string }> = {
+  'aetheris-2.5-pro': { name: 'Aetheris 2.5', desc: 'โมเดลอัจฉริยะ ทำงานทั่วไปและเขียนโค้ดได้รวดเร็ว' },
+  'aetheris-deep-reasoning': { name: 'Aetheris Reasoning', desc: 'คิดวิเคราะห์เชิงลึก สำหรับคณิตศาสตร์และตรรกะซับซ้อน' },
+  'aetheris-fast-flash': { name: 'Aetheris Mini', desc: 'เร็วเป็นพิเศษ เหมาะกับงานถามตอบสั้นๆ' }
 };
 
 export const TopNav: React.FC<TopNavProps> = ({
@@ -28,11 +24,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   onSelectModel,
   thinkingMode,
   onToggleThinkingMode,
-  latencyMs,
-  onOpenNodes,
-  onOpenAnalytics,
-  onShareSession,
-  onOpenCheckout,
+  onOpenCheckout: _onOpenCheckout,
   onOpenLogin,
   currentUser
 }) => {
@@ -50,123 +42,120 @@ export const TopNav: React.FC<TopNavProps> = ({
   }, []);
 
   return (
-    <header className="top-nav">
-      <div className="top-nav-left">
+    <header className="gpt-header">
+      <div className="gpt-header-left">
         <button
-          className="btn-icon mobile-menu-btn"
+          className="gpt-btn-icon mobile-menu-btn"
           onClick={onOpenMobileSidebar}
-          aria-label="Open navigation menu"
-          title="เปิดเมนู"
+          aria-label="Open sidebar"
+          title="เปิดเมนูข้าง"
         >
           <span className="material-symbols-outlined">menu</span>
         </button>
 
-        {/* Model Selector Dropdown */}
-        <div className="model-selector-wrapper" ref={dropdownRef}>
+        {/* Model Selector Pill (ChatGPT style) */}
+        <div className="gpt-model-dropdown-wrapper" ref={dropdownRef}>
           <button
-            className="model-selector-btn"
+            className="gpt-model-pill"
             onClick={() => setDropdownOpen(!dropdownOpen)}
             aria-haspopup="true"
             aria-expanded={dropdownOpen}
           >
-            <span className="model-status-dot"></span>
-            <span className="model-name-text">
-              <span className="model-full-name">{MODEL_NAMES[currentModel].full}</span>
-              <span className="model-short-name">{MODEL_NAMES[currentModel].short}</span>
-            </span>
+            <span className="gpt-model-current-name">{MODEL_LABELS[currentModel].name}</span>
             <span className="material-symbols-outlined icon-chevron">expand_more</span>
           </button>
 
           {dropdownOpen && (
-            <div className="model-dropdown-menu">
-              <div className="dropdown-header">โมเดลปัญญาประดิษฐ์ (Select Model)</div>
+            <div className="gpt-dropdown-menu">
+              <div className="gpt-dropdown-header">เลือกโมเดล</div>
               <button
-                className={`dropdown-item ${currentModel === 'aetheris-2.5-pro' ? 'active' : ''}`}
+                className={`gpt-dropdown-item ${currentModel === 'aetheris-2.5-pro' ? 'active' : ''}`}
                 onClick={() => {
                   onSelectModel('aetheris-2.5-pro');
                   setDropdownOpen(false);
                 }}
               >
-                <div className="dropdown-item-title">
-                  <span className="material-symbols-outlined item-icon text-primary">psychology</span>
-                  <strong>Aetheris 2.5 Pro Neural</strong>
+                <div className="dropdown-item-left">
+                  <span className="material-symbols-outlined">auto_awesome</span>
+                  <div>
+                    <div className="item-title">Aetheris 2.5</div>
+                    <div className="item-desc">{MODEL_LABELS['aetheris-2.5-pro'].desc}</div>
+                  </div>
                 </div>
-                <span className="dropdown-item-desc">เร็วที่สุดสำหรับงานทั่วไป เขียนโค้ด และการคิดวิเคราะห์</span>
+                {currentModel === 'aetheris-2.5-pro' && (
+                  <span className="material-symbols-outlined text-check">check</span>
+                )}
               </button>
 
               <button
-                className={`dropdown-item ${currentModel === 'aetheris-deep-reasoning' ? 'active' : ''}`}
+                className={`gpt-dropdown-item ${currentModel === 'aetheris-deep-reasoning' ? 'active' : ''}`}
                 onClick={() => {
                   onSelectModel('aetheris-deep-reasoning');
                   setDropdownOpen(false);
                 }}
               >
-                <div className="dropdown-item-title">
-                  <span className="material-symbols-outlined item-icon text-secondary">neurology</span>
-                  <strong>Aetheris Deep Reasoning</strong>
+                <div className="dropdown-item-left">
+                  <span className="material-symbols-outlined">psychology</span>
+                  <div>
+                    <div className="item-title">Aetheris Reasoning</div>
+                    <div className="item-desc">{MODEL_LABELS['aetheris-deep-reasoning'].desc}</div>
+                  </div>
                 </div>
-                <span className="dropdown-item-desc">การคิดเชิงลึกหลายชั้นสำหรับคณิตศาสตร์และตรรกะซับซ้อน</span>
+                {currentModel === 'aetheris-deep-reasoning' && (
+                  <span className="material-symbols-outlined text-check">check</span>
+                )}
               </button>
 
               <button
-                className={`dropdown-item ${currentModel === 'aetheris-fast-flash' ? 'active' : ''}`}
+                className={`gpt-dropdown-item ${currentModel === 'aetheris-fast-flash' ? 'active' : ''}`}
                 onClick={() => {
                   onSelectModel('aetheris-fast-flash');
                   setDropdownOpen(false);
                 }}
               >
-                <div className="dropdown-item-title">
-                  <span className="material-symbols-outlined item-icon text-accent">bolt</span>
-                  <strong>Aetheris Fast Flash</strong>
+                <div className="dropdown-item-left">
+                  <span className="material-symbols-outlined">bolt</span>
+                  <div>
+                    <div className="item-title">Aetheris Mini</div>
+                    <div className="item-desc">{MODEL_LABELS['aetheris-fast-flash'].desc}</div>
+                  </div>
                 </div>
-                <span className="dropdown-item-desc">ตอบสนองรวดเร็วระดับมิลลิวินาทีสำหรับงานถามตอบทั่วไป</span>
+                {currentModel === 'aetheris-fast-flash' && (
+                  <span className="material-symbols-outlined text-check">check</span>
+                )}
               </button>
             </div>
           )}
         </div>
 
-        {/* Model Capabilities Badges */}
-        <div className="capabilities-badges">
-          <button
-            className={`capability-pill ${thinkingMode ? 'active' : ''}`}
-            onClick={onToggleThinkingMode}
-            title="คลิกเพื่อสลับโหมดการคิด"
-          >
-            <span className="material-symbols-outlined text-primary">psychology</span>
-            <span>Thinking: <strong>{thinkingMode ? 'ON' : 'OFF'}</strong></span>
-          </button>
-          <div className="capability-pill">
-            <span className="material-symbols-outlined text-secondary">memory</span>
-            <span>Context: 128k</span>
-          </div>
-          <div className="capability-pill">
-            <span className="material-symbols-outlined text-success">speed</span>
-            <span>Latency: {latencyMs}ms</span>
-          </div>
-        </div>
+        {/* Thinking Toggle */}
+        <button
+          className={`gpt-header-pill ${thinkingMode ? 'active' : ''}`}
+          onClick={onToggleThinkingMode}
+          title="สลับโหมดวิเคราะห์แบบละเอียด"
+        >
+          <span className="material-symbols-outlined">psychology</span>
+          <span>คิดเชิงลึก: {thinkingMode ? 'เปิด' : 'ปิด'}</span>
+        </button>
       </div>
 
-      {/* Top Nav Right Actions */}
-      <div className="top-nav-right">
-        <button className="btn-icon" onClick={onOpenNodes} title="Neural Graph Nodes Visualizer">
-          <span className="material-symbols-outlined">hub</span>
-        </button>
-        <button className="btn-icon desktop-only-btn" onClick={onOpenAnalytics} title="สถิติและการทำงาน (Performance Analytics)">
-          <span className="material-symbols-outlined">analytics</span>
-        </button>
-        <div className="nav-divider"></div>
-        <button className="btn-subtle" onClick={onShareSession} title="แชร์บทสนทนา">
-          <span className="material-symbols-outlined">ios_share</span>
-          <span className="btn-label-text">แชร์</span>
-        </button>
-        <button className="btn-gradient-primary" onClick={onOpenCheckout} title="อัปเกรดเป็น Aetheris Pro">
-          <span className="material-symbols-outlined">rocket_launch</span>
-          <span className="btn-label-text">อัปเกรด Pro</span>
-        </button>
-        <button className="btn-subtle" onClick={onOpenLogin} title="บัญชีผู้ใช้งาน">
-          <span className="material-symbols-outlined">person</span>
-          <span className="btn-label-text">{currentUser?.isLoggedIn ? currentUser.name : 'เข้าสู่ระบบ'}</span>
-        </button>
+      {/* Header Right */}
+      <div className="gpt-header-right">
+        {!currentUser?.isLoggedIn ? (
+          <>
+            <button className="gpt-btn-signin" onClick={onOpenLogin}>
+              เข้าสู่ระบบ
+            </button>
+            <button className="gpt-btn-signup" onClick={onOpenLogin}>
+              สมัครใช้งาน
+            </button>
+          </>
+        ) : (
+          <button className="gpt-user-pill" onClick={onOpenLogin} title="บัญชีผู้ใช้">
+            <span className="user-avatar-small">{currentUser.name.slice(0, 1).toUpperCase()}</span>
+            <span className="user-name-text">{currentUser.name}</span>
+          </button>
+        )}
       </div>
     </header>
   );

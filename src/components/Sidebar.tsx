@@ -26,183 +26,101 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeSessionId,
   onSelectSession,
   onNewChat,
-  searchQuery,
-  onSearchChange,
   currentUser,
   onOpenProfile,
   onOpenSettings
 }) => {
-  const filter = searchQuery.trim().toLowerCase();
-
-  const getFilteredSessions = (category: 'today' | 'week' | 'older') => {
-    return sessions.filter(s => {
-      const matchCat = s.category === category;
-      const matchQuery = !filter || s.title.toLowerCase().includes(filter) || s.topic.toLowerCase().includes(filter);
-      return matchCat && matchQuery;
-    });
-  };
-
-  const renderGroup = (title: string, category: 'today' | 'week' | 'older') => {
-    const items = getFilteredSessions(category);
-
-    return (
-      <div className="history-group">
-        <div className="history-group-title">{title}</div>
-        <nav className="history-items">
-          {items.length === 0 ? (
-            <div style={{ padding: '6px 10px', fontSize: '11px', color: 'var(--outline)' }}>
-              ไม่มีบทสนทนา
+  return (
+    <>
+      <aside className={`gpt-sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
+        {/* Top Header: Logo + New Chat Icon */}
+        <div className="gpt-sidebar-top">
+          <div className="gpt-sidebar-brand" onClick={() => { onNewChat(); onCloseMobile(); }}>
+            <div className="gpt-logo-icon">
+              <svg viewBox="0 0 100 100" fill="none">
+                <circle cx="50" cy="50" r="44" fill="#212121" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="2"/>
+                <path d="M50 24L68 50L50 76L32 50Z" stroke="#f0f0f5" strokeWidth="3" fill="none" />
+                <line x1="28" y1="50" x2="72" y2="50" stroke="#f0f0f5" strokeWidth="2.5" strokeLinecap="round" />
+                <line x1="50" y1="28" x2="50" y2="72" stroke="#f0f0f5" strokeWidth="2.5" strokeLinecap="round" />
+                <circle cx="50" cy="50" r="3.5" fill="#f0f0f5" />
+              </svg>
             </div>
+            <span className="gpt-brand-text">Aetheris</span>
+          </div>
+
+          <div className="gpt-sidebar-top-actions">
+            <button
+              className="gpt-icon-btn"
+              onClick={() => { onNewChat(); onCloseMobile(); }}
+              title="แชทใหม่"
+            >
+              <span className="material-symbols-outlined">edit_square</span>
+            </button>
+            <button
+              className="gpt-icon-btn desktop-collapse"
+              onClick={onToggleCollapse}
+              title="ซ่อนแถบข้าง"
+            >
+              <span className="material-symbols-outlined">left_panel_close</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Chat List (Clean GPT History) */}
+        <div className="gpt-chat-list-container custom-scroll">
+          <div className="gpt-history-label">บทสนทนาล่าสุด</div>
+          {sessions.length === 0 ? (
+            <div className="gpt-empty-history">ไม่มีบทสนทนา</div>
           ) : (
-            items.map(s => {
+            sessions.map((s) => {
               const isActive = s.id === activeSessionId;
               return (
                 <button
                   key={s.id}
-                  className={`history-item ${isActive ? 'active' : ''}`}
+                  className={`gpt-chat-item ${isActive ? 'active' : ''}`}
                   onClick={() => {
                     onSelectSession(s.id);
                     onCloseMobile();
                   }}
-                  title={s.topic}
+                  title={s.title}
                 >
-                  <div className="history-item-left">
-                    <span className="material-symbols-outlined history-item-icon">
-                      {s.icon || 'chat_bubble'}
-                    </span>
-                    <span className="history-item-text">{s.title}</span>
-                  </div>
-                  {isActive && <span className="history-active-pulse" />}
+                  <span className="material-symbols-outlined gpt-chat-icon">chat_bubble</span>
+                  <span className="gpt-chat-title">{s.title || 'การสนทนาใหม่'}</span>
                 </button>
               );
             })
           )}
-        </nav>
-      </div>
-    );
-  };
+        </div>
 
-  return (
-    <>
-      <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
-        {/* Brand Header */}
-        <div className="sidebar-header">
-          <div className="brand-container">
-            <div className="brand-logo-frame">
-              <svg className="brand-svg" viewBox="0 0 100 100" fill="none">
-                <defs>
-                  <linearGradient id="aethGradSide" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#8B5CF6"/>
-                    <stop offset="50%" stopColor="#3B82F6"/>
-                    <stop offset="100%" stopColor="#06B6D4"/>
-                  </linearGradient>
-                  <radialGradient id="centerGlowSide" cx="50%" cy="50%" r="50%">
-                    <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.4"/>
-                    <stop offset="100%" stopColor="#0F172A" stopOpacity="0"/>
-                  </radialGradient>
-                </defs>
-                <rect width="100" height="100" rx="24" fill="#0D0E15"/>
-                <circle cx="50" cy="50" r="32" fill="url(#centerGlowSide)"/>
-                <circle cx="50" cy="50" r="28" stroke="url(#aethGradSide)" strokeWidth="4" strokeDasharray="8 4"/>
-                <circle cx="50" cy="50" r="16" stroke="#FFFFFF" strokeOpacity="0.9" strokeWidth="3"/>
-                <circle cx="50" cy="50" r="5" fill="#38BDF8"/>
-                <circle cx="50" cy="22" r="3.5" fill="#C084FC"/>
-                <circle cx="78" cy="50" r="3.5" fill="#22D3EE"/>
-              </svg>
+        {/* Bottom User Section */}
+        <div className="gpt-sidebar-bottom">
+          <div className="gpt-user-menu" onClick={onOpenProfile}>
+            <div className="gpt-user-avatar">
+              {currentUser.isLoggedIn ? (currentUser.name ? currentUser.name.slice(0, 1).toUpperCase() : 'U') : 'U'}
             </div>
-            <div className="brand-text-block">
-              <div className="brand-title-row">
-                <span className="brand-title">Aetheris AI</span>
-                <span className="badge-version">v2.5</span>
-              </div>
-              <span className="brand-subtitle">v2.5 Pro Neural</span>
+            <div className="gpt-user-name">
+              {currentUser.isLoggedIn ? currentUser.name : 'เข้าสู่ระบบ'}
             </div>
-          </div>
-          <div className="sidebar-header-actions">
             <button
-              className="btn-icon mobile-close-sidebar-btn"
-              onClick={onCloseMobile}
-              title="ปิดเมนู"
-              aria-label="Close sidebar"
+              type="button"
+              className="gpt-user-settings-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onOpenSettings();
+              }}
+              title="ตั้งค่า"
             >
-              <span className="material-symbols-outlined">close</span>
-            </button>
-            <button
-              className="btn-icon desktop-collapse-btn"
-              onClick={onToggleCollapse}
-              title="ยุบแถบข้าง (⌘B)"
-              aria-label="Toggle Sidebar"
-            >
-              <span className="material-symbols-outlined">dock_to_right</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Action Bar */}
-        <div className="sidebar-action-bar">
-          <button className="btn-new-chat" onClick={() => { onNewChat(); onCloseMobile(); }}>
-            <div className="btn-new-chat-left">
-              <span className="material-symbols-outlined icon-add">add</span>
-              <span>บทสนทนาใหม่ (New Chat)</span>
-            </div>
-            <kbd className="kbd-shortcut">⌘N</kbd>
-          </button>
-
-          <div className="search-box">
-            <span className="material-symbols-outlined search-icon">search</span>
-            <input
-              type="text"
-              placeholder="ค้นหาบทสนทนา..."
-              value={searchQuery}
-              onChange={(e) => onSearchChange(e.target.value)}
-              aria-label="Search chats"
-            />
-            <kbd className="kbd-shortcut-search">⌘K</kbd>
-          </div>
-        </div>
-
-        {/* Chat History Container */}
-        <div className="sidebar-history-container custom-scroll">
-          {renderGroup('วันนี้ (Today)', 'today')}
-          {renderGroup('7 วันที่ผ่านมา (Previous 7 Days)', 'week')}
-          {renderGroup('บทสนทนาก่อนหน้า (Older)', 'older')}
-        </div>
-
-        {/* Footer */}
-        <div className="sidebar-footer">
-          <div className="footer-tabs-grid">
-            <button className="footer-tab-btn" onClick={onOpenSettings}>
-              <span className="material-symbols-outlined">tune</span>
-              <span>พารามิเตอร์</span>
-            </button>
-            <button className="footer-tab-btn" onClick={onOpenSettings}>
               <span className="material-symbols-outlined">settings</span>
-              <span>การตั้งค่า</span>
-            </button>
-          </div>
-
-          <div className="user-profile-card" onClick={onOpenProfile}>
-            <div className="user-profile-info">
-              <div className="user-avatar">{currentUser.initials}</div>
-              <div className="user-text-col">
-                <div className="user-name-row">
-                  <span className="user-name">{currentUser.name}</span>
-                  <span className="badge-pro">{currentUser.tier}</span>
-                </div>
-                <span className="user-email">{currentUser.email || 'คลิกเพื่อเข้าสู่ระบบ'}</span>
-              </div>
-            </div>
-            <button className="btn-icon-subtle btn-user-options" title="บัญชีผู้ใช้งาน">
-              <span className="material-symbols-outlined">more_vert</span>
             </button>
           </div>
         </div>
       </aside>
 
-      {/* Backdrop for mobile */}
+      {/* Mobile Backdrop */}
       {mobileOpen && (
-        <div className="sidebar-backdrop active" onClick={onCloseMobile} aria-hidden="true" />
+        <div className="gpt-sidebar-backdrop" onClick={onCloseMobile} aria-hidden="true" />
       )}
     </>
   );
 };
+export default Sidebar;

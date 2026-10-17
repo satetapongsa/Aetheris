@@ -371,7 +371,7 @@ async function generateDeepSeekResponse(prompt, options = {}) {
         hour12: false
       }).format(now);
       const liveWeatherInfo = await fetchRealtimeWeather(prompt);
-      const defaultSystemInstruction = `You are Aetheris AI, an advanced, highly capable intelligence workspace.
+      const defaultSystemInstruction = `You are Aetheris, an advanced, highly capable conversational assistant.
 Real-Time Context:
 - \u0E27\u0E31\u0E19\u0E40\u0E27\u0E25\u0E32\u0E1B\u0E31\u0E08\u0E08\u0E38\u0E1A\u0E31\u0E19: ${thaiDateTimeStr} (\u0E40\u0E02\u0E15\u0E40\u0E27\u0E25\u0E32\u0E40\u0E2D\u0E40\u0E0A\u0E35\u0E22/\u0E01\u0E23\u0E38\u0E07\u0E40\u0E17\u0E1E\u0E2F Asia/Bangkok, UTC+7)
 ${liveWeatherInfo ? `- \u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2A\u0E20\u0E32\u0E1E\u0E2D\u0E32\u0E01\u0E32\u0E28\u0E2A\u0E14: ${liveWeatherInfo}` : ""}
@@ -558,7 +558,7 @@ export async function getActiveUsers() {
     thoughtSummary: thinkingMode ? `Thought for ${elapsedSec}s: \u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E02\u0E49\u0E2D\u0E2A\u0E2D\u0E1A\u0E16\u0E32\u0E21\u0E41\u0E25\u0E30\u0E1B\u0E23\u0E30\u0E21\u0E27\u0E25\u0E1C\u0E25\u0E04\u0E33\u0E15\u0E2D\u0E1A` : void 0,
     thoughtDetails: "\u0E23\u0E30\u0E1A\u0E1A\u0E1B\u0E23\u0E30\u0E21\u0E27\u0E25\u0E1C\u0E25\u0E04\u0E33\u0E15\u0E2D\u0E1A\u0E41\u0E1A\u0E1A\u0E01\u0E23\u0E30\u0E0A\u0E31\u0E1A \u0E23\u0E27\u0E14\u0E40\u0E23\u0E47\u0E27 \u0E41\u0E25\u0E30\u0E1B\u0E23\u0E30\u0E2B\u0E22\u0E31\u0E14\u0E42\u0E17\u0E40\u0E04\u0E19",
     paragraphs: [
-      `Aetheris AI \u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E43\u0E2B\u0E49\u0E1A\u0E23\u0E34\u0E01\u0E32\u0E23\u0E15\u0E2D\u0E1A\u0E04\u0E33\u0E16\u0E32\u0E21 \u0E40\u0E02\u0E35\u0E22\u0E19\u0E42\u0E04\u0E49\u0E14 \u0E2D\u0E2D\u0E01\u0E41\u0E1A\u0E1A\u0E23\u0E30\u0E1A\u0E1A \u0E41\u0E25\u0E30\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E21\u0E35\u0E1B\u0E23\u0E30\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E20\u0E32\u0E1E\u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14`
+      `Aetheris \u0E1E\u0E23\u0E49\u0E2D\u0E21\u0E43\u0E2B\u0E49\u0E1A\u0E23\u0E34\u0E01\u0E32\u0E23\u0E15\u0E2D\u0E1A\u0E04\u0E33\u0E16\u0E32\u0E21 \u0E40\u0E02\u0E35\u0E22\u0E19\u0E42\u0E04\u0E49\u0E14 \u0E2D\u0E2D\u0E01\u0E41\u0E1A\u0E1A\u0E23\u0E30\u0E1A\u0E1A \u0E41\u0E25\u0E30\u0E27\u0E34\u0E40\u0E04\u0E23\u0E32\u0E30\u0E2B\u0E4C\u0E02\u0E49\u0E2D\u0E21\u0E39\u0E25\u0E2D\u0E22\u0E48\u0E32\u0E07\u0E21\u0E35\u0E1B\u0E23\u0E30\u0E2A\u0E34\u0E17\u0E18\u0E34\u0E20\u0E32\u0E1E\u0E2A\u0E39\u0E07\u0E2A\u0E38\u0E14`
     ],
     suggestions: [
       "\u0E2A\u0E2D\u0E1A\u0E16\u0E32\u0E21\u0E41\u0E19\u0E27\u0E17\u0E32\u0E07\u0E2A\u0E16\u0E32\u0E1B\u0E31\u0E15\u0E22\u0E01\u0E23\u0E23\u0E21\u0E23\u0E30\u0E1A\u0E1A",
@@ -703,7 +703,7 @@ router3.get("/:id/messages", async (req, res) => {
 router3.post("/", async (req, res) => {
   try {
     const userId = getUserIdFromToken2(req);
-    const { title = "\u0E01\u0E32\u0E23\u0E2A\u0E19\u0E17\u0E19\u0E32\u0E43\u0E2B\u0E21\u0E48", topic = "\u0E1A\u0E17\u0E2A\u0E19\u0E17\u0E19\u0E32\u0E43\u0E2B\u0E21\u0E48\u0E01\u0E31\u0E1A Aetheris AI", category = "today", icon = "chat_bubble" } = req.body;
+    const { title = "\u0E01\u0E32\u0E23\u0E2A\u0E19\u0E17\u0E19\u0E32\u0E43\u0E2B\u0E21\u0E48", topic = "\u0E1A\u0E17\u0E2A\u0E19\u0E17\u0E19\u0E32\u0E43\u0E2B\u0E21\u0E48\u0E01\u0E31\u0E1A Aetheris", category = "today", icon = "chat_bubble" } = req.body;
     const id = "sess-" + Date.now();
     const newSession = await dbSessions.create({
       id,
@@ -780,7 +780,7 @@ app.use((err, _req, res, _next) => {
 if (!process.env.VERCEL) {
   app.listen(PORT, async () => {
     console.log(`=======================================================`);
-    console.log(`\u{1F680} Aetheris AI Backend Server running on port ${PORT}`);
+    console.log(`\u{1F680} Aetheris Backend Server running on port ${PORT}`);
     console.log(`\u{1F4E1} Health Check: http://localhost:${PORT}/api/health`);
     console.log(`\u{1F5C4}\uFE0F  Neon Database: ${isNeonConfigured ? "CONNECTED" : "STANDBY (Memory Mode)"}`);
     console.log(`\u{1F9E0} AI Engine:     ${isDeepSeekConfigured ? "CONNECTED" : "STANDBY (Local Mode)"}`);

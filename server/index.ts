@@ -70,7 +70,7 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 if (!process.env.VERCEL) {
   app.listen(PORT, async () => {
     console.log(`=======================================================`);
-    console.log(`🚀 Aetheris AI Backend Server running on port ${PORT}`);
+    console.log(`🚀 Aetheris Backend Server running on port ${PORT}`);
     console.log(`📡 Health Check: http://localhost:${PORT}/api/health`);
     console.log(`🗄️  Neon Database: ${isNeonConfigured ? 'CONNECTED' : 'STANDBY (Memory Mode)'}`);
     console.log(`🧠 AI Engine:     ${isDeepSeekConfigured ? 'CONNECTED' : 'STANDBY (Local Mode)'}`);

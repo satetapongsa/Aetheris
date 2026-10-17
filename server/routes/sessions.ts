@@ -61,7 +61,7 @@ router.get('/:id/messages', async (req: Request, res: Response) => {
 router.post('/', async (req: Request, res: Response) => {
   try {
     const userId = getUserIdFromToken(req);
-    const { title = 'การสนทนาใหม่', topic = 'บทสนทนาใหม่กับ Aetheris AI', category = 'today', icon = 'chat_bubble' } = req.body;
+    const { title = 'การสนทนาใหม่', topic = 'บทสนทนาใหม่กับ Aetheris', category = 'today', icon = 'chat_bubble' } = req.body;
     const id = 'sess-' + Date.now();
 
     const newSession = await dbSessions.create({

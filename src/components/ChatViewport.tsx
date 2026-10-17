@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import type { ChatSession, User } from '../types';
-import { STARTER_PROMPTS } from '../data/initialData';
 
 interface ChatViewportProps {
   session: ChatSession;
@@ -15,7 +14,7 @@ interface ChatViewportProps {
 
 export const ChatViewport: React.FC<ChatViewportProps> = ({
   session,
-  currentUser,
+  currentUser: _currentUser,
   isStreaming,
   streamingStatusText,
   onSendSuggestion,
@@ -104,83 +103,19 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
   return (
     <section className="chat-viewport custom-scroll" ref={viewportRef}>
       <div className="chat-thread-container">
-        {/* Session Metadata Header */}
-        <div className="session-meta-bar">
-          <div className="meta-left">
-            <span className="material-symbols-outlined text-primary">chat</span>
-            <span className="session-title-text">{session?.title || 'การสนทนาใหม่'}</span>
-            <span className="bullet">•</span>
-            <span className="session-topic-text">{session?.topic || 'Aetheris AI'}</span>
-          </div>
-          <div className="meta-right">
-            <span className="material-symbols-outlined">lock</span>
-            <span>SOC-2 End-to-End Encrypted</span>
-          </div>
-        </div>
-
-        {/* Clean Welcome Hero State (When no messages yet) */}
+        {/* Clean GPT-style Empty State (When no messages yet) */}
         {!hasMessages ? (
-          <div className="chat-welcome-hero">
-            <div className="hero-emblem-box">
-              <div className="hero-emblem-ring"></div>
-              <div className="hero-emblem-core">
-                <svg viewBox="0 0 100 100" fill="none" className="hero-logo-svg">
-                  <defs>
-                    <linearGradient id="heroGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#C2C3EE" />
-                      <stop offset="50%" stopColor="#8184B8" />
-                      <stop offset="100%" stopColor="#4D4F74" />
-                    </linearGradient>
-                    <radialGradient id="heroCenterGlow" cx="50%" cy="50%" r="50%">
-                      <stop offset="0%" stopColor="#C2C3EE" stopOpacity="0.3" />
-                      <stop offset="100%" stopColor="#0E0E12" stopOpacity="0" />
-                    </radialGradient>
-                  </defs>
-                  <rect width="100" height="100" rx="28" fill="#131319" stroke="rgba(194, 195, 238, 0.3)" strokeWidth="2" />
-                  <circle cx="50" cy="50" r="32" fill="url(#heroCenterGlow)" />
-                  <path d="M50 20L72 50L50 80L28 50Z" stroke="url(#heroGrad)" strokeWidth="3" fill="none" />
-                  <line x1="22" y1="50" x2="78" y2="50" stroke="#C2C3EE" strokeWidth="2.5" strokeLinecap="round" />
-                  <line x1="50" y1="24" x2="50" y2="76" stroke="#C2C3EE" strokeWidth="2.5" strokeLinecap="round" />
-                  <circle cx="50" cy="50" r="5" fill="#E1E1FF" />
-                </svg>
-              </div>
+          <div className="gpt-empty-center">
+            <div className="gpt-brand-emblem">
+              <svg viewBox="0 0 100 100" fill="none" className="gpt-logo-svg">
+                <circle cx="50" cy="50" r="44" fill="#1e1e24" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="2"/>
+                <path d="M50 24L68 50L50 76L32 50Z" stroke="#f0f0f5" strokeWidth="2.5" fill="none" />
+                <line x1="28" y1="50" x2="72" y2="50" stroke="#f0f0f5" strokeWidth="2" strokeLinecap="round" />
+                <line x1="50" y1="28" x2="50" y2="72" stroke="#f0f0f5" strokeWidth="2" strokeLinecap="round" />
+                <circle cx="50" cy="50" r="3.5" fill="#f0f0f5" />
+              </svg>
             </div>
-
-            <div className="hero-text-group">
-              <div className="hero-badge-pill">
-                <span className="hero-pulse-dot"></span>
-                <span>Aetheris 2.5 Pro Neural Engine</span>
-                <span className="badge-pro-tag">READY</span>
-              </div>
-              <h1 className="hero-main-heading">
-                ยินดีต้อนรับสู่ <span className="gradient-text">Aetheris AI</span>
-              </h1>
-              <p className="hero-subtext">
-                ระบบปัญญาประดิษฐ์อัจฉริยะสำหรับงานวิศวกรรมระบบ สถาปัตยกรรมซอฟต์แวร์ และการเขียนโค้ดประสิทธิภาพสูง
-              </p>
-            </div>
-
-            <div className="hero-starters-grid">
-              {STARTER_PROMPTS.map((starter) => (
-                <button
-                  key={starter.id}
-                  type="button"
-                  className="starter-card"
-                  onClick={() => onSendSuggestion(starter.prompt)}
-                >
-                  <div className="starter-card-top">
-                    <span className="material-symbols-outlined starter-icon">{starter.icon}</span>
-                    <span className="starter-category">{starter.category}</span>
-                  </div>
-                  <h4 className="starter-title">{starter.title}</h4>
-                  <p className="starter-prompt-preview">{starter.prompt}</p>
-                  <div className="starter-action-row">
-                    <span>เริ่มต้นการสนทนา</span>
-                    <span className="material-symbols-outlined" style={{ fontSize: '15px' }}>arrow_forward</span>
-                  </div>
-                </button>
-              ))}
-            </div>
+            <h1 className="gpt-empty-title">มีอะไรให้ Aetheris ช่วยวันนี้ไหม?</h1>
           </div>
         ) : (
           /* Messages List */
@@ -188,16 +123,9 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
             {session.messages.map((msg, idx) => {
               if (msg.sender === 'user') {
                 return (
-                  <div key={idx} className="message-user-wrap">
-                    <div className="user-meta-row">
-                      <span>{currentUser?.name || 'ผู้ใช้งาน'}</span>
-                      <span style={{ color: 'var(--outline)', fontSize: '10px' }}>
-                        {msg.time || 'เมื่อสักครู่'}
-                      </span>
-                    </div>
-                    <div className="user-message-row">
+                  <div key={idx} className="message-row user-row">
+                    <div className="message-content user-content">
                       <div className="user-bubble">{msg.content}</div>
-                      <div className="user-bubble-avatar">{currentUser?.initials || 'U'}</div>
                     </div>
                   </div>
                 );
@@ -206,86 +134,44 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
               // AI Assistant Message
               const isThoughtExpanded = !!expandedThoughts[idx];
               return (
-                <div key={idx} className="message-ai-wrap">
-                  <div className="ai-avatar-box">
+                <div key={idx} className="message-row assistant-row">
+                  <div className="assistant-avatar">
                     <svg viewBox="0 0 100 100" fill="none">
-                      <defs>
-                        <linearGradient id={`aethGradMsg-${idx}`} x1="0%" y1="0%" x2="100%" y2="100%">
-                          <stop offset="0%" stopColor="#8B5CF6"/>
-                          <stop offset="50%" stopColor="#3B82F6"/>
-                          <stop offset="100%" stopColor="#06B6D4"/>
-                        </linearGradient>
-                        <radialGradient id={`centerGlowMsg-${idx}`} cx="50%" cy="50%" r="50%">
-                          <stop offset="0%" stopColor="#8B5CF6" stopOpacity="0.4"/>
-                          <stop offset="100%" stopColor="#0F172A" stopOpacity="0"/>
-                        </radialGradient>
-                      </defs>
-                      <rect width="100" height="100" rx="24" fill="#0D0E15"/>
-                      <circle cx="50" cy="50" r="32" fill={`url(#centerGlowMsg-${idx})`}/>
-                      <circle cx="50" cy="50" r="28" stroke={`url(#aethGradMsg-${idx})`} strokeWidth="4" strokeDasharray="8 4"/>
-                      <circle cx="50" cy="50" r="16" stroke="#FFFFFF" strokeOpacity="0.9" strokeWidth="3"/>
-                      <circle cx="50" cy="50" r="5" fill="#38BDF8"/>
-                      <circle cx="50" cy="22" r="3.5" fill="#C084FC"/>
-                      <circle cx="78" cy="50" r="3.5" fill="#22D3EE"/>
+                      <circle cx="50" cy="50" r="44" fill="#1e1e24" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="2"/>
+                      <path d="M50 24L68 50L50 76L32 50Z" stroke="#e0e0ea" strokeWidth="2.5" fill="none" />
+                      <line x1="28" y1="50" x2="72" y2="50" stroke="#e0e0ea" strokeWidth="2" strokeLinecap="round" />
+                      <line x1="50" y1="28" x2="50" y2="72" stroke="#e0e0ea" strokeWidth="2" strokeLinecap="round" />
+                      <circle cx="50" cy="50" r="3.5" fill="#e0e0ea" />
                     </svg>
                   </div>
 
-                  <div className="ai-body-col">
-                    {/* Meta Header */}
-                    <div className="ai-meta-header">
-                      <div className="ai-name-group">
-                        <span className="ai-model-name">
-                          {msg.modelName || 'Aetheris 2.5 Pro Neural'}
-                        </span>
-                        <span className="material-symbols-outlined verified-icon">verified</span>
-                        <span className="ai-duration">{msg.duration || ''}</span>
-                      </div>
-                      <div className="ai-action-buttons">
-                        <button
-                          className="btn-icon-subtle"
-                          title="คัดลอกคำตอบทั้งหมด"
-                          onClick={() => {
-                            const fullText = (msg.paragraphs || []).join('\n\n');
-                            onCopyText(fullText, 'คัดลอกข้อความคำตอบเรียบร้อยแล้ว');
-                          }}
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
-                            content_copy
-                          </span>
-                        </button>
-                        <button
-                          className="btn-icon-subtle"
-                          title="สร้างคำตอบใหม่"
-                          onClick={onRetry}
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
-                            refresh
-                          </span>
-                        </button>
-                      </div>
+                  <div className="message-content assistant-content">
+                    <div className="assistant-header">
+                      <span className="assistant-name">Aetheris</span>
                     </div>
 
                     {/* Thought / Reasoning Bar */}
                     {msg.thoughtSummary && (
-                      <>
-                        <div
+                      <div className="thought-wrapper">
+                        <button
+                          type="button"
                           className="reasoning-bar"
                           onClick={() => toggleThought(idx)}
                         >
                           <div className="reasoning-left">
-                            <span className="material-symbols-outlined">check_circle</span>
-                            <span><strong>{msg.thoughtSummary}</strong></span>
+                            <span className="material-symbols-outlined">psychology</span>
+                            <span>{msg.thoughtSummary}</span>
                           </div>
                           <span className="material-symbols-outlined text-outline">
                             {isThoughtExpanded ? 'expand_less' : 'expand_more'}
                           </span>
-                        </div>
+                        </button>
                         {isThoughtExpanded && (
                           <div className="reasoning-details">
                             {msg.thoughtDetails}
                           </div>
                         )}
-                      </>
+                      </div>
                     )}
 
                     {/* Text Content */}
@@ -294,33 +180,11 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
                         <p key={pIdx} dangerouslySetInnerHTML={{ __html: formatMarkdown(p) }} />
                       ))}
 
-                      {/* Feature Cards Grid */}
-                      {msg.featureCards && msg.featureCards.length > 0 && (
-                        <div className="feature-cards-grid">
-                          {msg.featureCards.map((card, cIdx) => (
-                            <div key={cIdx} className="feature-mini-card">
-                              <div className={`mini-card-header ${card.type === 'primary' ? 'primary-tag' : 'secondary-tag'}`}>
-                                <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
-                                  {card.icon}
-                                </span>
-                                <span>{card.title}</span>
-                              </div>
-                              <p className="mini-card-desc">{card.desc}</p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
                       {/* Code Block */}
                       {msg.codeBlock && (
                         <div className="code-block-wrapper">
                           <div className="code-header-bar">
                             <div className="code-title-group">
-                              <div className="window-dots">
-                                <span className="dot dot-red"></span>
-                                <span className="dot dot-yellow"></span>
-                                <span className="dot dot-green"></span>
-                              </div>
                               <span className="material-symbols-outlined text-primary" style={{ fontSize: '16px' }}>
                                 code
                               </span>
@@ -344,42 +208,54 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
                       )}
                     </div>
 
-                    {/* Suggestions Chips */}
+                    {/* Actions Row */}
+                    <div className="assistant-actions-row">
+                      <button
+                        className="btn-action-icon"
+                        title="คัดลอกคำตอบ"
+                        onClick={() => {
+                          const fullText = (msg.paragraphs || []).join('\n\n');
+                          onCopyText(fullText, 'คัดลอกข้อความแล้ว');
+                        }}
+                      >
+                        <span className="material-symbols-outlined">content_copy</span>
+                      </button>
+                      <button
+                        className="btn-action-icon"
+                        title="สร้างคำตอบใหม่"
+                        onClick={onRetry}
+                      >
+                        <span className="material-symbols-outlined">refresh</span>
+                      </button>
+                      <button
+                        className="btn-action-icon"
+                        title="มีประโยชน์"
+                        onClick={() => onFeedback('like')}
+                      >
+                        <span className="material-symbols-outlined">thumb_up</span>
+                      </button>
+                      <button
+                        className="btn-action-icon"
+                        title="ไม่ถูกใจ"
+                        onClick={() => onFeedback('dislike')}
+                      >
+                        <span className="material-symbols-outlined">thumb_down</span>
+                      </button>
+                    </div>
+
+                    {/* Optional Follow-up Suggestions */}
                     {msg.suggestions && msg.suggestions.length > 0 && (
-                      <div className="suggestion-chips-row">
-                        <span className="suggestion-label">ข้อเสนอแนะถัดไป:</span>
+                      <div className="followup-pills-row">
                         {msg.suggestions.map((sug, sIdx) => (
                           <button
                             key={sIdx}
-                            className="suggestion-chip"
+                            type="button"
+                            className="followup-pill"
                             onClick={() => onSendSuggestion(sug)}
                           >
-                            <span className="material-symbols-outlined text-primary" style={{ fontSize: '14px' }}>
-                              add_circle
-                            </span>
                             <span>{sug}</span>
                           </button>
                         ))}
-                        <div className="feedback-actions">
-                          <button
-                            className="btn-icon-subtle"
-                            title="คำตอบมีประโยชน์"
-                            onClick={() => onFeedback('like')}
-                          >
-                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
-                              thumb_up
-                            </span>
-                          </button>
-                          <button
-                            className="btn-icon-subtle"
-                            title="ต้องการคำตอบที่ดีกว่า"
-                            onClick={() => onFeedback('dislike')}
-                          >
-                            <span className="material-symbols-outlined" style={{ fontSize: '16px' }}>
-                              thumb_down
-                            </span>
-                          </button>
-                        </div>
                       </div>
                     )}
                   </div>
@@ -391,14 +267,17 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
 
         {/* Streaming Indicator */}
         {isStreaming && (
-          <div className="ai-typing-indicator">
-            <div className="ai-avatar-mini">
-              <div className="ai-pulse-dot"></div>
+          <div className="message-row assistant-row">
+            <div className="assistant-avatar">
+              <svg viewBox="0 0 100 100" fill="none">
+                <circle cx="50" cy="50" r="44" fill="#1e1e24" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="2"/>
+                <circle cx="50" cy="50" r="6" fill="#f0f0f5" className="pulse-circle" />
+              </svg>
             </div>
-            <div className="typing-content">
-              <div className="thinking-stream-pill">
-                <span className="material-symbols-outlined spin-icon text-primary">autorenew</span>
-                <span>{streamingStatusText}</span>
+            <div className="message-content assistant-content">
+              <div className="typing-stream-pill">
+                <span className="material-symbols-outlined spin-icon text-primary">progress_activity</span>
+                <span>{streamingStatusText || 'กำลังคิดและตอบคำถาม...'}</span>
               </div>
             </div>
           </div>
@@ -407,3 +286,4 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
     </section>
   );
 };
+export default ChatViewport;

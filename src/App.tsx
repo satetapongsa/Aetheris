@@ -6,8 +6,6 @@ import { PromptDeck } from './components/PromptDeck';
 import { LoginModal } from './components/LoginModal';
 import { CheckoutModal } from './components/CheckoutModal';
 import { SettingsModal } from './components/SettingsModal';
-import { NeuralGraphModal } from './components/NeuralGraphModal';
-import { AnalyticsModal } from './components/AnalyticsModal';
 import { ToastContainer } from './components/ToastContainer';
 import { authService, chatService } from './services/api';
 import { INITIAL_SESSIONS, INITIAL_USER } from './data/initialData';
@@ -27,7 +25,7 @@ export function App() {
   // Model & Tool Controls
   const [currentModel, setCurrentModel] = useState<ModelId>('aetheris-2.5-pro');
   const [thinkingMode, setThinkingMode] = useState<boolean>(true);
-  const [webSearchActive, setWebSearchActive] = useState<boolean>(true);
+  const [webSearchActive, setWebSearchActive] = useState<boolean>(false);
   const [deepReasoningActive, setDeepReasoningActive] = useState<boolean>(false);
   const [isVoiceRecording, setIsVoiceRecording] = useState<boolean>(false);
   const [attachedFiles, setAttachedFiles] = useState<{ name: string; size: string }[]>([]);
@@ -37,21 +35,16 @@ export function App() {
   const [isStreaming, setIsStreaming] = useState<boolean>(false);
   const [streamingStatusText, setStreamingStatusText] = useState<string>('กำลังคิดและประมวลผลคำตอบ...');
 
-  // Live Latency
-  const [latencyMs, setLatencyMs] = useState<number>(24);
-
   // Modals State
   const [loginModalOpen, setLoginModalOpen] = useState<boolean>(false);
   const [checkoutModalOpen, setCheckoutModalOpen] = useState<boolean>(false);
   const [settingsModalOpen, setSettingsModalOpen] = useState<boolean>(false);
-  const [nodesModalOpen, setNodesModalOpen] = useState<boolean>(false);
-  const [analyticsModalOpen, setAnalyticsModalOpen] = useState<boolean>(false);
 
   // Parameters
   const [parameters, setParameters] = useState<ModelParameterState>({
     temperature: 0.7,
     topP: 0.95,
-    maxTokens: 8192,
+    maxTokens: 4096,
     systemPrompt: '',
     apiKey: localStorage.getItem('aetheris_api_key') || ''
   });
@@ -64,7 +57,7 @@ export function App() {
     setToasts(prev => [...prev, { id, text, type, icon }]);
     setTimeout(() => {
       setToasts(prev => prev.filter(t => t.id !== id));
-    }, 4000);
+    }, 3500);
   };
 
   // Check saved session on mount
@@ -74,14 +67,6 @@ export function App() {
         setCurrentUser(user);
       }
     });
-  }, []);
-
-  // Live Latency Jitter
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setLatencyMs(Math.floor(Math.random() * 8) + 21);
-    }, 4500);
-    return () => clearInterval(timer);
   }, []);
 
   // Keyboard Shortcuts
@@ -99,8 +84,6 @@ export function App() {
         setLoginModalOpen(false);
         setCheckoutModalOpen(false);
         setSettingsModalOpen(false);
-        setNodesModalOpen(false);
-        setAnalyticsModalOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -114,19 +97,19 @@ export function App() {
     const newSession: ChatSession = {
       id: newId,
       title: 'การสนทนาใหม่',
-      topic: 'บทสนทนาใหม่กับ Aetheris AI',
+      topic: 'บทสนทนาใหม่กับ Aetheris',
       category: 'today',
       icon: 'chat_bubble',
-      messages: [] // Clean empty messages!
+      messages: []
     };
 
     setSessions(prev => [newSession, ...prev]);
     setActiveSessionId(newId);
     setMobileSidebarOpen(false);
-    showToast('สร้างบทสนทนาใหม่แล้ว', 'success', 'add_comment');
   };
 
   const handleSendMessage = (textToSend?: string) => {
+    if (isStreaming) return;
     const text = (textToSend || promptText).trim();
     if (!text && attachedFiles.length === 0) return;
 
@@ -157,8 +140,8 @@ export function App() {
       prev.map(s => {
         if (s.id === activeSessionId) {
           const isFirstMessage = s.messages.length === 0;
-          sessionTitle = isFirstMessage ? (text.slice(0, 28) || 'การสนทนาใหม่') : s.title;
-          sessionTopic = isFirstMessage ? (text.slice(0, 48) || 'หัวข้อการสนทนา') : s.topic;
+          sessionTitle = isFirstMessage ? (text.slice(0, 30) || 'การสนทนาใหม่') : s.title;
+          sessionTopic = isFirstMessage ? (text.slice(0, 50) || 'หัวข้อการสนทนา') : s.topic;
           return {
             ...s,
             title: sessionTitle,
@@ -170,10 +153,10 @@ export function App() {
       })
     );
 
-    triggerSimulatedAIResponse(fullContent, false, sessionTitle, sessionTopic);
+    triggerAIResponse(fullContent, false, sessionTitle, sessionTopic);
   };
 
-  const triggerSimulatedAIResponse = async (
+  const triggerAIResponse = async (
     userPrompt: string,
     isRetry: boolean = false,
     updatedTitle?: string,
@@ -182,7 +165,7 @@ export function App() {
     setIsStreaming(true);
     setStreamingStatusText(
       thinkingMode
-        ? 'Aetheris Deep Neural กำลังวิเคราะห์โจทย์และเหตุผล...'
+        ? 'Aetheris กำลังคิดวิเคราะห์...'
         : 'Aetheris กำลังประมวลผลคำตอบ...'
     );
 
@@ -200,8 +183,8 @@ export function App() {
         apiKey: parameters.apiKey
       });
     } catch {
-      // Graceful fallback to local synthesis if backend server is not running
-      await new Promise(r => setTimeout(r, thinkingMode ? 2000 : 1200));
+      // Fallback
+      await new Promise(r => setTimeout(r, thinkingMode ? 1500 : 800));
       aiResponse = generateContextualResponse(userPrompt);
     } finally {
       setIsStreaming(false);
@@ -225,120 +208,15 @@ export function App() {
   };
 
   const generateContextualResponse = (prompt: string): Message => {
-    const lower = prompt.toLowerCase();
-    const modelDisplayName =
-      currentModel === 'aetheris-deep-reasoning'
-        ? 'Aetheris Deep Reasoning'
-        : currentModel === 'aetheris-fast-flash'
-        ? 'Aetheris Fast Flash'
-        : 'Aetheris 2.5 Pro Neural';
-
-    if (lower.includes('useoptimistic') || lower.includes('optimistic')) {
-      return {
-        sender: 'ai',
-        modelName: modelDisplayName,
-        duration: 'เสร็จสิ้นใน 2.1 วินาที',
-        thoughtSummary: 'Thought for 2.1s: วิเคราะห์ React 19 useOptimistic Hook สำหรับ instant UI feedback ระหว่าง network roundtrip',
-        thoughtDetails: 'useOptimistic ช่วยให้ UI เปลี่ยนแปลงล่วงหน้าทันทีที่ผู้ใช้กดส่ง และจะ rollback กลับอัตโนมัติหาก server action ส่ง error กลับมา',
-        paragraphs: [
-          'การใช้ <code class="inline-code">useOptimistic</code> ใน <strong>React 19</strong> ช่วยมอบประสบการณ์ใช้งานแบบ Zero-Latency โดยแสดงผลล่วงหน้าก่อนที่ Server Action จะตอบกลับ:'
-        ],
-        codeBlock: {
-          filename: 'OptimisticMessageList.tsx',
-          language: 'TypeScript',
-          code: `import { useOptimistic } from "react";
-
-export function MessageFeed({ messages, sendMessageAction }: { messages: string[]; sendMessageAction: (text: string) => Promise<void> }) {
-  const [optimisticMessages, setOptimistic] = useOptimistic(
-    messages,
-    (current, newMessage: string) => [...current, newMessage]
-  );
-
-  async function handleSend(formData: FormData) {
-    const text = formData.get("text") as string;
-    setOptimistic(text); // แสดงข้อความบน UI ทันที
-    await sendMessageAction(text);
-  }
-
-  return (
-    <form action={handleSend}>
-      <ul>{optimisticMessages.map((m, i) => <li key={i}>{m}</li>)}</ul>
-      <input name="text" placeholder="พิมพ์ข้อความ..." required />
-      <button type="submit">ส่งทันที</button>
-    </form>
-  );
-}`
-        },
-        suggestions: [
-          'วิธีจัดการ Rollback Animation เมื่อ Network Error',
-          'ตัวอย่าง Zod Schema Validation บน Server Action'
-        ]
-      };
-    }
-
-    if (lower.includes('zod') || lower.includes('validation')) {
-      return {
-        sender: 'ai',
-        modelName: modelDisplayName,
-        duration: 'เสร็จสิ้นใน 2.4 วินาที',
-        thoughtSummary: 'Thought for 2.4s: Type-safe schema validation ด้วย Zod v3.24 บน Next.js Server Actions',
-        thoughtDetails: 'ตรวจทาน SafeParse methodology เพื่อคืนค่า fieldErrors ไปยัง client โดยไม่ต้อง throw uncaught exceptions',
-        paragraphs: [
-          'การทำ Server Action Validation ด้วย <strong>Zod</strong> อย่างเป็นมาตรฐาน สามารถนำ <code class="inline-code">schema.safeParse()</code> มาใช้งานร่วมกับ Return Type ของ Action ได้อย่างปลอดภัย:'
-        ],
-        codeBlock: {
-          filename: 'authAction.ts',
-          language: 'TypeScript',
-          code: `"use server";
-import { z } from "zod";
-
-const UserRegisterSchema = z.object({
-  email: z.string().email("รูปแบบอีเมลไม่ถูกต้อง"),
-  password: z.string().min(8, "รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร")
-});
-
-export async function registerAction(prevState: any, formData: FormData) {
-  const parsed = UserRegisterSchema.safeParse(Object.fromEntries(formData));
-  if (!parsed.success) {
-    return { errors: parsed.error.flatten().fieldErrors, success: false };
-  }
-  return { success: true };
-}`
-        },
-        suggestions: [
-          'วิธีผูก fieldErrors เข้ากับ Tailwind error class',
-          'การทำ Debounced Client-side Validation'
-        ]
-      };
-    }
-
     return {
       sender: 'ai',
-      modelName: modelDisplayName,
-      duration: 'เสร็จสิ้นใน 1.7 วินาที',
-      thoughtSummary: `Thought for 1.7s: ประมวลผลคำสั่ง "${prompt.slice(0, 32)}..." ด้วย Neural Graph Synthesis`,
-      thoughtDetails: `วิเคราะห์โครงสร้างข้อมูล, ค้นหา Context จากโมเดล ${modelDisplayName} และตรวจสอบความสอดคล้องทางตรรกะแบบเรียลไทม์`,
+      modelName: 'Aetheris',
       paragraphs: [
-        `ผมได้ทำการวิเคราะห์คำถามของคุณเกี่ยวกับ <strong>"${prompt}"</strong> เรียบร้อยแล้ว`,
-        'นี่คือแนวทางที่แนะนำตามมาตรฐาน Best Practices ที่เน้นความเสถียร ประสิทธิภาพสูง และรองรับการขยายตัว (Scalability):'
-      ],
-      featureCards: [
-        {
-          title: 'High Throughput Architecture',
-          desc: 'ออกแบบให้ latency ต่ำและใช้ทรัพยากร compute คุ้มค่าที่สุด',
-          type: 'primary',
-          icon: 'speed'
-        },
-        {
-          title: 'Zero-Trust Security',
-          desc: 'เข้ารหัส end-to-end พร้อมรองรับ audit logging ตามมาตรฐาน SOC-2',
-          type: 'secondary',
-          icon: 'security'
-        }
+        `ขณะนี้ Aetheris เชื่อมต่อผ่าน backend พร้อมตอบคำถามของคุณอย่างรวดเร็วและแม่นยำเกี่ยวกับ: <strong>${prompt}</strong>`
       ],
       suggestions: [
-        'ขอตัวอย่างการนำไปใช้งานจริง (Implementation Example)',
-        'วิเคราะห์จุดที่อาจเกิด Performance Bottleneck'
+        'สอบถามข้อมูลเพิ่มเติม',
+        'ขอตัวอย่างโค้ดหรือการประยุกต์ใช้'
       ]
     };
   };
@@ -349,20 +227,14 @@ export async function registerAction(prevState: any, formData: FormData) {
     });
   };
 
-  const handleShareSession = () => {
-    const dummyUrl = `${window.location.origin}/share/${activeSessionId}`;
-    handleCopyText(dummyUrl, 'สร้างและคัดลอกลิงก์แชร์เซสชันแล้ว');
-  };
-
   const handleVoiceToggle = () => {
     if (!isVoiceRecording) {
       setIsVoiceRecording(true);
-      showToast('กำลังฟังเสียงของคุณ... (กำลังแปลงเป็นข้อความ)', 'info', 'mic');
+      showToast('กำลังฟังเสียง...', 'info', 'mic');
       setTimeout(() => {
-        setPromptText('ช่วยอธิบายความแตกต่างระหว่าง Server Action กับ Route Handler ใน Next.js หน่อย');
+        setPromptText('ช่วยอธิบายสถาปัตยกรรมของ Aetheris');
         setIsVoiceRecording(false);
-        showToast('แปลงเสียงเป็นข้อความเรียบร้อย', 'success', 'check');
-      }, 3000);
+      }, 2500);
     } else {
       setIsVoiceRecording(false);
     }
@@ -374,19 +246,12 @@ export async function registerAction(prevState: any, formData: FormData) {
       size: (f.size / 1024).toFixed(1) + ' KB'
     }));
     setAttachedFiles(prev => [...prev, ...newFiles]);
-    showToast(`แนบไฟล์สำเร็จ ${newFiles.length} รายการ`, 'success', 'attach_file');
+    showToast(`แนบไฟล์ ${newFiles.length} ไฟล์`, 'success', 'attach_file');
   };
 
   return (
-    <div className="app-layout">
-      {/* Ambient Auroras */}
-      <div className="ambient-glow-container" aria-hidden="true">
-        <div className="ambient-aurora-1"></div>
-        <div className="ambient-aurora-2"></div>
-        <div className="ambient-aurora-3"></div>
-      </div>
-
-      {/* 1. Collapsible Sidebar */}
+    <div className="gpt-app-container">
+      {/* 1. Sidebar */}
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -404,20 +269,13 @@ export async function registerAction(prevState: any, formData: FormData) {
       />
 
       {/* 2. Main Workspace */}
-      <main className="main-workspace">
+      <main className="gpt-main-workspace">
         <TopNav
           onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
           currentModel={currentModel}
           onSelectModel={setCurrentModel}
           thinkingMode={thinkingMode}
-          onToggleThinkingMode={() => {
-            setThinkingMode(!thinkingMode);
-            showToast(`Thinking Mode: ${!thinkingMode ? 'Active' : 'Paused'}`, 'info', 'psychology');
-          }}
-          latencyMs={latencyMs}
-          onOpenNodes={() => setNodesModalOpen(true)}
-          onOpenAnalytics={() => setAnalyticsModalOpen(true)}
-          onShareSession={handleShareSession}
+          onToggleThinkingMode={() => setThinkingMode(!thinkingMode)}
           onOpenCheckout={() => setCheckoutModalOpen(true)}
           onOpenLogin={() => setLoginModalOpen(true)}
           currentUser={currentUser}
@@ -432,23 +290,17 @@ export async function registerAction(prevState: any, formData: FormData) {
           onSendSuggestion={handleSendMessage}
           onCopyText={handleCopyText}
           onFeedback={(type) => {
-            showToast(
-              type === 'like'
-                ? 'ขอบคุณสำหรับคำติชม! ระบบจะจดจำรูปแบบนี้'
-                : 'ขอบคุณสำหรับข้อเสนอแนะ ระบบจะนำไปปรับปรุงคำตอบถัดไป',
-              type === 'like' ? 'success' : 'info',
-              type === 'like' ? 'thumb_up' : 'thumb_down'
-            );
+            showToast(type === 'like' ? 'ขอบคุณสำหรับคำติชม' : 'ขอบคุณสำหรับข้อเสนอแนะ', 'info', type === 'like' ? 'thumb_up' : 'thumb_down');
           }}
           onRetry={() => {
             const lastUser = [...activeSession.messages].reverse().find(m => m.sender === 'user');
             if (lastUser && lastUser.content) {
-              triggerSimulatedAIResponse(lastUser.content, true);
+              triggerAIResponse(lastUser.content, true);
             }
           }}
         />
 
-        {/* 4. Floating Command Prompt Deck */}
+        {/* 4. GPT Input Dock */}
         <PromptDeck
           promptText={promptText}
           onPromptChange={setPromptText}
@@ -457,15 +309,9 @@ export async function registerAction(prevState: any, formData: FormData) {
           onRemoveFile={(i) => setAttachedFiles(prev => prev.filter((_, idx) => idx !== i))}
           onAttachFiles={handleAttachFiles}
           webSearchActive={webSearchActive}
-          onToggleWebSearch={() => {
-            setWebSearchActive(!webSearchActive);
-            showToast(`Web Search: ${!webSearchActive ? 'เปิด' : 'ปิด'}`, 'info', 'public');
-          }}
+          onToggleWebSearch={() => setWebSearchActive(!webSearchActive)}
           deepReasoningActive={deepReasoningActive}
-          onToggleDeepReasoning={() => {
-            setDeepReasoningActive(!deepReasoningActive);
-            showToast(`Deep Reasoning: ${!deepReasoningActive ? 'เปิด' : 'ปิด'}`, 'info', 'neurology');
-          }}
+          onToggleDeepReasoning={() => setDeepReasoningActive(!deepReasoningActive)}
           isVoiceRecording={isVoiceRecording}
           onToggleVoice={handleVoiceToggle}
           isStreaming={isStreaming}
@@ -478,7 +324,7 @@ export async function registerAction(prevState: any, formData: FormData) {
         onClose={() => setLoginModalOpen(false)}
         onLoginSuccess={(updated) => {
           setCurrentUser(prev => ({ ...prev, ...updated }));
-          showToast(`ยินดีต้อนรับคุณ ${updated.name || currentUser.name}! เข้าสู่ระบบสำเร็จ`, 'success', 'verified');
+          showToast(`ยินดีต้อนรับ ${updated.name || currentUser.name}!`, 'success', 'check');
         }}
       />
 
@@ -486,8 +332,8 @@ export async function registerAction(prevState: any, formData: FormData) {
         isOpen={checkoutModalOpen}
         onClose={() => setCheckoutModalOpen(false)}
         onPaymentSuccess={() => {
-          setCurrentUser(prev => ({ ...prev, tier: 'PRO UNLIMITED' }));
-          showToast('การชำระเงินสำเร็จ! บัญชีของคุณได้รับการอัปเกรดเป็น Aetheris Pro Unlimited แล้ว', 'success', 'verified');
+          setCurrentUser(prev => ({ ...prev, tier: 'PRO' }));
+          showToast('อัปเกรดเป็น Aetheris Pro เรียบร้อยแล้ว', 'success', 'check');
         }}
       />
 
@@ -497,18 +343,8 @@ export async function registerAction(prevState: any, formData: FormData) {
         parameters={parameters}
         onSave={(params) => {
           setParameters(params);
-          showToast('บันทึกพารามิเตอร์โมเดลเรียบร้อยแล้ว', 'success', 'tune');
+          showToast('บันทึกการตั้งค่าเรียบร้อยแล้ว', 'success', 'check');
         }}
-      />
-
-      <NeuralGraphModal
-        isOpen={nodesModalOpen}
-        onClose={() => setNodesModalOpen(false)}
-      />
-
-      <AnalyticsModal
-        isOpen={analyticsModalOpen}
-        onClose={() => setAnalyticsModalOpen(false)}
       />
 
       {/* Toast Notification Container */}

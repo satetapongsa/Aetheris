@@ -79,8 +79,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               <circle cx="50" cy="50" r="4.5" fill="#E1E1FF"/>
             </svg>
           </div>
-          <h2 className="auth-title">ยินดีต้อนรับสู่ Aetheris AI</h2>
-          <p className="auth-subtitle">ระบบปัญญาประดิษฐ์ยุคใหม่สำหรับนักพัฒนาและองค์กร</p>
+          <h2 className="auth-title">ยินดีต้อนรับสู่ Aetheris</h2>
+          <p className="auth-subtitle">ระบบปัญญาประดิษฐ์อัจฉริยะยุคใหม่</p>
         </div>
 
         {/* Tabs: Sign In / Sign Up */}
