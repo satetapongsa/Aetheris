@@ -57,8 +57,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <span className="material-symbols-outlined">edit_square</span>
             </button>
             <button
-              className="gpt-icon-btn desktop-collapse"
-              onClick={onToggleCollapse}
+              className="gpt-icon-btn collapse-toggle-btn"
+              onClick={() => {
+                onToggleCollapse();
+                onCloseMobile();
+              }}
               title="ซ่อนแถบข้าง"
             >
               <span className="material-symbols-outlined">left_panel_close</span>

@@ -24,7 +24,6 @@ export function App() {
 
   // Model & Tool Controls
   const [currentModel, setCurrentModel] = useState<ModelId>('aetheris-2.5-pro');
-  const [thinkingMode, setThinkingMode] = useState<boolean>(true);
   const [webSearchActive, setWebSearchActive] = useState<boolean>(false);
   const [deepReasoningActive, setDeepReasoningActive] = useState<boolean>(false);
   const [isVoiceRecording, setIsVoiceRecording] = useState<boolean>(false);
@@ -164,7 +163,7 @@ export function App() {
   ) => {
     setIsStreaming(true);
     setStreamingStatusText(
-      thinkingMode
+      deepReasoningActive
         ? 'Aetheris กำลังคิดวิเคราะห์...'
         : 'Aetheris กำลังประมวลผลคำตอบ...'
     );
@@ -174,7 +173,7 @@ export function App() {
       // Call backend API (DeepSeek powered)
       aiResponse = await chatService.sendMessage(userPrompt, {
         sessionId: activeSessionId,
-        thinkingMode,
+        thinkingMode: deepReasoningActive,
         temperature: parameters.temperature,
         maxTokens: parameters.maxTokens,
         systemPrompt: parameters.systemPrompt,
@@ -184,7 +183,7 @@ export function App() {
       });
     } catch {
       // Fallback
-      await new Promise(r => setTimeout(r, thinkingMode ? 1500 : 800));
+      await new Promise(r => setTimeout(r, deepReasoningActive ? 1500 : 800));
       aiResponse = generateContextualResponse(userPrompt);
     } finally {
       setIsStreaming(false);
@@ -271,14 +270,15 @@ export function App() {
       {/* 2. Main Workspace */}
       <main className="gpt-main-workspace">
         <TopNav
-          onOpenMobileSidebar={() => setMobileSidebarOpen(true)}
           currentModel={currentModel}
           onSelectModel={setCurrentModel}
-          thinkingMode={thinkingMode}
-          onToggleThinkingMode={() => setThinkingMode(!thinkingMode)}
-          onOpenCheckout={() => setCheckoutModalOpen(true)}
           onOpenLogin={() => setLoginModalOpen(true)}
           currentUser={currentUser}
+          sidebarCollapsed={sidebarCollapsed}
+          onToggleSidebar={() => {
+            setSidebarCollapsed(false);
+            setMobileSidebarOpen(true);
+          }}
         />
 
         {/* 3. Central Chat Viewport */}

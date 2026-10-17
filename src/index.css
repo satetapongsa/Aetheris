@@ -1295,8 +1295,8 @@ html, body {
     transform: translateX(0);
   }
 
-  .desktop-collapse {
-    display: none !important;
+  .collapse-toggle-btn {
+    display: flex !important;
   }
 
   .chat-thread-container {

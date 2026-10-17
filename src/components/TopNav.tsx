@@ -2,14 +2,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import type { ModelId } from '../types';
 
 interface TopNavProps {
-  onOpenMobileSidebar: () => void;
   currentModel: ModelId;
   onSelectModel: (model: ModelId) => void;
-  thinkingMode: boolean;
-  onToggleThinkingMode: () => void;
-  onOpenCheckout: () => void;
   onOpenLogin: () => void;
   currentUser?: { name: string; isLoggedIn: boolean };
+  sidebarCollapsed: boolean;
+  onToggleSidebar: () => void;
 }
 
 const MODEL_LABELS: Record<ModelId, { name: string; desc: string }> = {
@@ -19,14 +17,12 @@ const MODEL_LABELS: Record<ModelId, { name: string; desc: string }> = {
 };
 
 export const TopNav: React.FC<TopNavProps> = ({
-  onOpenMobileSidebar,
   currentModel,
   onSelectModel,
-  thinkingMode,
-  onToggleThinkingMode,
-  onOpenCheckout: _onOpenCheckout,
   onOpenLogin,
-  currentUser
+  currentUser,
+  sidebarCollapsed,
+  onToggleSidebar
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -44,14 +40,17 @@ export const TopNav: React.FC<TopNavProps> = ({
   return (
     <header className="gpt-header">
       <div className="gpt-header-left">
-        <button
-          className="gpt-btn-icon mobile-menu-btn"
-          onClick={onOpenMobileSidebar}
-          aria-label="Open sidebar"
-          title="เปิดเมนูข้าง"
-        >
-          <span className="material-symbols-outlined">menu</span>
-        </button>
+        {/* Toggle Sidebar Button (shown when sidebar is closed) */}
+        {sidebarCollapsed && (
+          <button
+            className="gpt-btn-icon toggle-sidebar-btn"
+            onClick={onToggleSidebar}
+            aria-label="Open sidebar"
+            title="เปิดแถบข้าง"
+          >
+            <span className="material-symbols-outlined">dock_to_right</span>
+          </button>
+        )}
 
         {/* Model Selector Pill (ChatGPT style) */}
         <div className="gpt-model-dropdown-wrapper" ref={dropdownRef}>
@@ -127,16 +126,6 @@ export const TopNav: React.FC<TopNavProps> = ({
             </div>
           )}
         </div>
-
-        {/* Thinking Toggle */}
-        <button
-          className={`gpt-header-pill ${thinkingMode ? 'active' : ''}`}
-          onClick={onToggleThinkingMode}
-          title="สลับโหมดวิเคราะห์แบบละเอียด"
-        >
-          <span className="material-symbols-outlined">psychology</span>
-          <span>คิดเชิงลึก: {thinkingMode ? 'เปิด' : 'ปิด'}</span>
-        </button>
       </div>
 
       {/* Header Right */}
