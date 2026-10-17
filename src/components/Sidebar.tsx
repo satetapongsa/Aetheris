@@ -36,15 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Top Header: Logo + New Chat Icon */}
         <div className="gpt-sidebar-top">
           <div className="gpt-sidebar-brand" onClick={() => { onNewChat(); onCloseMobile(); }}>
-            <div className="gpt-logo-icon">
-              <svg viewBox="0 0 100 100" fill="none">
-                <circle cx="50" cy="50" r="44" fill="#212121" stroke="rgba(255, 255, 255, 0.15)" strokeWidth="2"/>
-                <path d="M50 24L68 50L50 76L32 50Z" stroke="#f0f0f5" strokeWidth="3" fill="none" />
-                <line x1="28" y1="50" x2="72" y2="50" stroke="#f0f0f5" strokeWidth="2.5" strokeLinecap="round" />
-                <line x1="50" y1="28" x2="50" y2="72" stroke="#f0f0f5" strokeWidth="2.5" strokeLinecap="round" />
-                <circle cx="50" cy="50" r="3.5" fill="#f0f0f5" />
-              </svg>
-            </div>
+            <img src="/aetheris-logo.png" alt="Aetheris Logo" className="gpt-logo-img" />
             <span className="gpt-brand-text">Aetheris</span>
           </div>
 

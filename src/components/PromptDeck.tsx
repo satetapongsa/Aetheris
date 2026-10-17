@@ -16,8 +16,6 @@ interface PromptDeckProps {
   onToggleWebSearch: () => void;
   deepReasoningActive: boolean;
   onToggleDeepReasoning: () => void;
-  isVoiceRecording: boolean;
-  onToggleVoice: () => void;
   isStreaming?: boolean;
 }
 
@@ -32,8 +30,6 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
   onToggleWebSearch,
   deepReasoningActive,
   onToggleDeepReasoning,
-  isVoiceRecording,
-  onToggleVoice,
   isStreaming = false
 }) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -141,16 +137,6 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
               >
                 <span className="material-symbols-outlined">psychology</span>
                 <span>คิดเชิงลึก</span>
-              </button>
-
-              {/* Voice Input */}
-              <button
-                type="button"
-                className={`btn-gpt-tool ${isVoiceRecording ? 'active-pulse' : ''}`}
-                title="พิมพ์ด้วยเสียง"
-                onClick={onToggleVoice}
-              >
-                <span className="material-symbols-outlined">mic</span>
               </button>
             </div>
 

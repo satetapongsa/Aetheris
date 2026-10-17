@@ -52,6 +52,14 @@ export const TopNav: React.FC<TopNavProps> = ({
           </button>
         )}
 
+        {/* AI Brand / Profile Logo */}
+        {sidebarCollapsed && (
+          <div className="gpt-header-brand" title="Aetheris">
+            <img src="/aetheris-logo.png" alt="Aetheris" className="gpt-header-logo-img" />
+            <span className="gpt-header-brand-name">Aetheris</span>
+          </div>
+        )}
+
         {/* Model Selector Pill (ChatGPT style) */}
         <div className="gpt-model-dropdown-wrapper" ref={dropdownRef}>
           <button

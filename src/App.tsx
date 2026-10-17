@@ -26,7 +26,6 @@ export function App() {
   const [currentModel, setCurrentModel] = useState<ModelId>('aetheris-2.5-pro');
   const [webSearchActive, setWebSearchActive] = useState<boolean>(false);
   const [deepReasoningActive, setDeepReasoningActive] = useState<boolean>(false);
-  const [isVoiceRecording, setIsVoiceRecording] = useState<boolean>(false);
   const [attachedFiles, setAttachedFiles] = useState<{ name: string; size: string }[]>([]);
   const [promptText, setPromptText] = useState<string>('');
 
@@ -226,19 +225,6 @@ export function App() {
     });
   };
 
-  const handleVoiceToggle = () => {
-    if (!isVoiceRecording) {
-      setIsVoiceRecording(true);
-      showToast('กำลังฟังเสียง...', 'info', 'mic');
-      setTimeout(() => {
-        setPromptText('ช่วยอธิบายสถาปัตยกรรมของ Aetheris');
-        setIsVoiceRecording(false);
-      }, 2500);
-    } else {
-      setIsVoiceRecording(false);
-    }
-  };
-
   const handleAttachFiles = (files: FileList) => {
     const newFiles = Array.from(files).map(f => ({
       name: f.name,
@@ -312,8 +298,6 @@ export function App() {
           onToggleWebSearch={() => setWebSearchActive(!webSearchActive)}
           deepReasoningActive={deepReasoningActive}
           onToggleDeepReasoning={() => setDeepReasoningActive(!deepReasoningActive)}
-          isVoiceRecording={isVoiceRecording}
-          onToggleVoice={handleVoiceToggle}
           isStreaming={isStreaming}
         />
       </main>

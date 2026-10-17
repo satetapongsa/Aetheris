@@ -122,9 +122,13 @@ html, body {
   background: var(--bg-hover);
 }
 
-.gpt-logo-icon {
+.gpt-logo-icon,
+.gpt-logo-img {
   width: 28px;
   height: 28px;
+  border-radius: 7px;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
 .gpt-brand-text {
@@ -324,6 +328,27 @@ html, body {
   display: flex;
   align-items: center;
   gap: 10px;
+}
+
+.gpt-header-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  user-select: none;
+}
+
+.gpt-header-logo-img {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.gpt-header-brand-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-white);
+  letter-spacing: -0.2px;
 }
 
 .gpt-btn-icon {
@@ -574,6 +599,13 @@ html, body {
   height: 100%;
 }
 
+.gpt-empty-logo-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  object-fit: cover;
+}
+
 .gpt-empty-title {
   font-size: 26px;
   font-weight: 600;
@@ -624,9 +656,17 @@ html, body {
 .assistant-avatar {
   width: 32px;
   height: 32px;
-  border-radius: 50%;
+  border-radius: 8px;
+  overflow: hidden;
   flex-shrink: 0;
   margin-top: 2px;
+}
+
+.assistant-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .assistant-avatar svg {

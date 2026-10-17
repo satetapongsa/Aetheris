@@ -107,13 +107,7 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
         {!hasMessages ? (
           <div className="gpt-empty-center">
             <div className="gpt-brand-emblem">
-              <svg viewBox="0 0 100 100" fill="none" className="gpt-logo-svg">
-                <circle cx="50" cy="50" r="44" fill="#1e1e24" stroke="rgba(255, 255, 255, 0.12)" strokeWidth="2"/>
-                <path d="M50 24L68 50L50 76L32 50Z" stroke="#f0f0f5" strokeWidth="2.5" fill="none" />
-                <line x1="28" y1="50" x2="72" y2="50" stroke="#f0f0f5" strokeWidth="2" strokeLinecap="round" />
-                <line x1="50" y1="28" x2="50" y2="72" stroke="#f0f0f5" strokeWidth="2" strokeLinecap="round" />
-                <circle cx="50" cy="50" r="3.5" fill="#f0f0f5" />
-              </svg>
+              <img src="/aetheris-logo.png" alt="Aetheris" className="gpt-empty-logo-img" />
             </div>
             <h1 className="gpt-empty-title">มีอะไรให้ Aetheris ช่วยวันนี้ไหม?</h1>
           </div>
@@ -136,13 +130,7 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
               return (
                 <div key={idx} className="message-row assistant-row">
                   <div className="assistant-avatar">
-                    <svg viewBox="0 0 100 100" fill="none">
-                      <circle cx="50" cy="50" r="44" fill="#1e1e24" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="2"/>
-                      <path d="M50 24L68 50L50 76L32 50Z" stroke="#e0e0ea" strokeWidth="2.5" fill="none" />
-                      <line x1="28" y1="50" x2="72" y2="50" stroke="#e0e0ea" strokeWidth="2" strokeLinecap="round" />
-                      <line x1="50" y1="28" x2="50" y2="72" stroke="#e0e0ea" strokeWidth="2" strokeLinecap="round" />
-                      <circle cx="50" cy="50" r="3.5" fill="#e0e0ea" />
-                    </svg>
+                    <img src="/aetheris-logo.png" alt="Aetheris Profile" className="assistant-avatar-img" />
                   </div>
 
                   <div className="message-content assistant-content">
