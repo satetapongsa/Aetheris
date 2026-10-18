@@ -40,19 +40,17 @@ export const TopNav: React.FC<TopNavProps> = ({
   return (
     <header className="tech-header">
       <div className="tech-header-left">
-        {/* Toggle Sidebar Button (shown when sidebar is closed) */}
-        {sidebarCollapsed && (
-          <button
-            className="tech-icon-btn"
-            onClick={onToggleSidebar}
-            aria-label="Open sidebar"
-            title="เปิดแถบเมนู"
-          >
-            <span className="material-symbols-outlined">menu</span>
-          </button>
-        )}
+        {/* Toggle Sidebar Button (shown when sidebar is closed or on mobile devices) */}
+        <button
+          className={`tech-icon-btn ${sidebarCollapsed ? 'show-desktop' : 'hide-desktop'} mobile-menu-btn`}
+          onClick={onToggleSidebar}
+          aria-label="Open sidebar"
+          title="เปิดแถบเมนูประวัติแชท"
+        >
+          <span className="material-symbols-outlined">menu</span>
+        </button>
 
-        {/* AI Brand / Profile Logo */}
+        {/* AI Brand / Profile Logo (Desktop only when collapsed) */}
         {sidebarCollapsed && (
           <div className="tech-header-brand" title="Aetheris AI Platform">
             <div className="tech-header-logo-wrap">

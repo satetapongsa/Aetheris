@@ -365,6 +365,14 @@ export function App() {
       <LoginModal
         isOpen={loginModalOpen}
         onClose={() => setLoginModalOpen(false)}
+        currentUser={currentUser}
+        onLogout={() => {
+          authService.logout();
+          setCurrentUser(INITIAL_USER);
+          setSessions(INITIAL_SESSIONS);
+          setActiveSessionId('sess-new');
+          showToast('ออกจากระบบเรียบร้อยแล้ว', 'info', 'logout');
+        }}
         onLoginSuccess={(updated) => {
           setCurrentUser(prev => ({ ...prev, ...updated, isLoggedIn: true }));
           showToast(`ยินดีต้อนรับ ${updated.name || currentUser.name}! เข้าสู่ระบบสำเร็จ`, 'success', 'check');

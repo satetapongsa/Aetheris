@@ -77,7 +77,9 @@ async function initDbSchema() {
         created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
       );
     `;
-    console.log("[Neon DB] Schema synchronized successfully.");
+    await sqlClient`CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);`;
+    await sqlClient`CREATE INDEX IF NOT EXISTS idx_messages_session_id ON messages(session_id);`;
+    console.log("[Neon DB] Schema and high-performance indexes synchronized successfully.");
   } catch (err) {
     console.error("[Neon DB] Error initializing schema:", err);
   }

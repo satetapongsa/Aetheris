@@ -6,12 +6,16 @@ interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
   onLoginSuccess: (user: Partial<User>) => void;
+  currentUser?: User;
+  onLogout?: () => void;
 }
 
 export const LoginModal: React.FC<LoginModalProps> = ({
   isOpen,
   onClose,
-  onLoginSuccess
+  onLoginSuccess,
+  currentUser,
+  onLogout
 }) => {
   const [activeTab, setActiveTab] = useState<'signin' | 'signup'>('signin');
   const [showPassword, setShowPassword] = useState(false);
@@ -46,8 +50,63 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   };
 
   const handleSocial = (_provider: string) => {
-    setErrorMessage('ยังไม่ได้เชื่อมต่อระบบ');
+    setErrorMessage('ระบบเข้าสู่ระบบด้วย Google อยู่ในขั้นตอนการพัฒนา (กรุณาใช้อีเมลและรหัสผ่าน)');
   };
+
+  // If user is already logged in, show Profile & Logout view
+  if (currentUser?.isLoggedIn) {
+    return (
+      <div className="modal-overlay" role="dialog" aria-modal="true" onClick={onClose}>
+        <div className="modal-card modal-login-card fit-modal-card" onClick={(e) => e.stopPropagation()}>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
+            <span className="material-symbols-outlined">close</span>
+          </button>
+
+          <div className="auth-header text-center">
+            <div className="auth-user-avatar-large">
+              {currentUser.name ? currentUser.name.slice(0, 1).toUpperCase() : 'U'}
+            </div>
+            <h2 className="auth-title">{currentUser.name}</h2>
+            <p className="auth-subtitle">{currentUser.email || 'บัญชีผู้ใช้งาน Aetheris'}</p>
+          </div>
+
+          <div className="profile-info-card">
+            <div className="profile-info-row">
+              <span className="profile-info-label">สถานะบัญชี</span>
+              <span className="tech-badge-inline" style={{ color: 'var(--accent-tech)' }}>
+                {currentUser.tier === 'PRO' ? 'PRO ACCESS' : 'TECH FREE'}
+              </span>
+            </div>
+            <div className="profile-info-row">
+              <span className="profile-info-label">ระบบประมวลผล</span>
+              <span className="profile-info-val">Aetheris Core Connected</span>
+            </div>
+            <div className="profile-info-row">
+              <span className="profile-info-label">ฐานข้อมูลคลาวด์</span>
+              <span className="profile-info-val" style={{ color: 'var(--accent-tech)' }}>Neon DB Synced</span>
+            </div>
+          </div>
+
+          <div className="profile-actions-column">
+            <button
+              type="button"
+              className="btn-logout-danger"
+              onClick={() => {
+                if (onLogout) onLogout();
+                onClose();
+              }}
+            >
+              <span className="material-symbols-outlined">logout</span>
+              <span>ออกจากระบบ (Sign Out)</span>
+            </button>
+            <button type="button" className="btn-modal-cancel" onClick={onClose}>
+              ปิดหน้าต่าง
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true" onClick={onClose}>
@@ -96,7 +155,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </div>
         )}
 
-        {/* 1. Email & Password Form ON TOP */}
+        {/* 1. Email & Password Form */}
         <form onSubmit={handleSubmit} className="auth-form">
           {activeTab === 'signup' && (
             <div className="form-group">
@@ -115,7 +174,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           )}
 
           <div className="form-group">
-            <label className="form-label">อีเมลการทำงาน (Email)</label>
+            <label className="form-label">อีเมล (Email Address)</label>
             <div className="input-with-icon">
               <span className="material-symbols-outlined input-icon">mail</span>
               <input
@@ -131,11 +190,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           <div className="form-group">
             <div className="form-label-row">
               <label className="form-label">รหัสผ่าน (Password)</label>
-              {activeTab === 'signin' && (
-                <a href="#" className="link-forgot-pass" onClick={(e) => e.preventDefault()}>
-                  ลืมรหัสผ่าน?
-                </a>
-              )}
             </div>
             <div className="input-with-icon">
               <span className="material-symbols-outlined input-icon">lock</span>
@@ -167,10 +221,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
         {/* 2. Divider */}
         <div className="auth-divider">
-          <span>หรือเข้าสู่ระบบด้วย</span>
+          <span>หรือ</span>
         </div>
 
-        {/* 3. Social Logins BELOW Username/Password (Google only) */}
+        {/* 3. Social Logins (Google) */}
         <div className="social-logins-row">
           <button
             type="button"
@@ -178,19 +232,19 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             onClick={() => handleSocial('Google')}
             title="เข้าสู่ระบบด้วย Google"
           >
-            <svg className="social-icon" viewBox="0 0 24 24">
+            <svg className="social-icon" viewBox="0 0 24 24" width="20" height="20">
               <path d="M12 5c1.6 0 3 .6 4.1 1.6l3.1-3.1C17.3 1.7 14.8 1 12 1 7.5 1 3.7 3.6 1.9 7.3l3.7 2.9C6.5 7.4 9 5 12 5z" fill="#EA4335"></path>
               <path d="M23.5 12.3c0-.8-.1-1.6-.2-2.3H12v4.5h6.5c-.3 1.5-1.1 2.8-2.4 3.7l3.7 2.9c2.2-2 3.7-5 3.7-8.8z" fill="#4285F4"></path>
               <path d="M5.6 14.8c-.2-.7-.4-1.5-.4-2.8s.2-2.1.4-2.8L1.9 6.3C.7 8.7 0 10.3 0 12s.7 3.3 1.9 5.7l3.7-2.9z" fill="#FBBC05"></path>
               <path d="M12 23c3.2 0 6-1.1 8-3l-3.7-2.9c-1.1.7-2.5 1.2-4.3 1.2-3 0-5.5-2.4-6.4-5.2L1.9 16C3.7 19.7 7.5 23 12 23z" fill="#34A853"></path>
             </svg>
-            <span>เข้าสู่ระบบด้วย Google</span>
+            <span>ดำเนินการต่อด้วย Google</span>
           </button>
         </div>
 
         {/* Footer Note */}
         <div className="auth-footer-note">
-          เข้าใช้งานถือว่ายอมรับ <a href="#">ข้อตกลงการใช้งาน</a> และ <a href="#">นโยบายความเป็นส่วนตัว</a>
+          เข้าใช้งานถือว่ายอมรับ <a href="#" onClick={(e) => e.preventDefault()}>ข้อตกลงการใช้งาน</a> และ <a href="#" onClick={(e) => e.preventDefault()}>นโยบายความเป็นส่วนตัว</a>
         </div>
       </div>
     </div>

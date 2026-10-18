@@ -1813,4 +1813,182 @@ html, body {
     bottom: 110px;
     right: 16px;
   }
+
+  .mobile-menu-btn {
+    display: flex !important;
+  }
+}
+
+/* Visibility helpers for menu button */
+.hide-desktop {
+  display: none;
+}
+
+.show-desktop {
+  display: flex;
+}
+
+/* Profile Info in Modal */
+.auth-user-avatar-large {
+  width: 56px;
+  height: 56px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #00f2aa, #38bdf8);
+  color: #050608;
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+  box-shadow: 0 0 16px var(--accent-tech-glow);
+}
+
+.profile-info-card {
+  background: #090b0e;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.profile-info-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 13px;
+}
+
+.profile-info-label {
+  color: var(--text-muted);
+}
+
+.profile-info-val {
+  color: var(--text-white);
+  font-weight: 500;
+}
+
+.profile-actions-column {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.btn-logout-danger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.3);
+  border-radius: 8px;
+  color: #f43f5e;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-logout-danger:hover {
+  background: rgba(244, 63, 94, 0.2);
+  border-color: #f43f5e;
+  box-shadow: 0 0 12px rgba(244, 63, 94, 0.25);
+}
+
+.btn-modal-cancel {
+  width: 100%;
+  padding: 8px 14px;
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-modal-cancel:hover {
+  background: var(--bg-card);
+  color: var(--text-white);
+}
+
+/* Divider in Modal */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 14px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border-subtle);
+}
+
+/* Social Logins (Google) */
+.social-logins-row {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.btn-social-compact {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: #14171d;
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-white);
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+.btn-social-compact:hover {
+  background: #1c212a;
+  border-color: var(--accent-tech);
+  color: var(--text-white);
+  box-shadow: 0 0 10px rgba(0, 242, 170, 0.2);
+}
+
+.social-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.auth-footer-note {
+  margin-top: 16px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+.auth-footer-note a {
+  color: var(--accent-tech);
+  text-decoration: none;
+}
+
+.auth-footer-note a:hover {
+  text-decoration: underline;
 }
