@@ -55,20 +55,20 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
   const canSend = !isStreaming && (promptText.trim().length > 0 || attachedFiles.length > 0);
 
   return (
-    <footer className="gpt-input-dock">
-      <div className="gpt-input-wrapper">
+    <footer className="tech-input-dock">
+      <div className="tech-input-wrapper">
         {/* Attached Files Preview Bar */}
         {attachedFiles.length > 0 && (
-          <div className="attachment-preview-bar">
+          <div className="tech-attachment-bar">
             {attachedFiles.map((f, i) => (
-              <div key={i} className="attached-file-chip">
-                <span className="material-symbols-outlined text-primary" style={{ fontSize: '14px' }}>
+              <div key={i} className="tech-file-chip">
+                <span className="material-symbols-outlined text-tech-accent" style={{ fontSize: '14px' }}>
                   description
                 </span>
-                <span className="attached-filename">{f.name}</span>
+                <span className="tech-filename">{f.name}</span>
                 <button
                   type="button"
-                  className="btn-remove-attachment"
+                  className="tech-remove-file-btn"
                   onClick={() => onRemoveFile(i)}
                   title="ลบไฟล์"
                 >
@@ -81,26 +81,26 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
           </div>
         )}
 
-        {/* Floating Input Box (GPT Capsule) */}
-        <div className="gpt-input-box">
+        {/* Floating Input Box (Dark Tech Console) */}
+        <div className="tech-console-box">
           <textarea
             ref={textareaRef}
-            className="gpt-textarea custom-scroll"
-            placeholder="ถามอะไรก็ได้กับ Aetheris..."
+            className="tech-textarea custom-scroll"
+            placeholder="ส่งคำถาม เขียนโค้ด หรือให้วิเคราะห์ข้อมูลกับ Aetheris..."
             rows={1}
             value={promptText}
             onChange={(e) => onPromptChange(e.target.value)}
             onKeyDown={handleKeyDown}
           />
 
-          {/* Bottom Toolbar inside the capsule */}
-          <div className="gpt-input-toolbar">
-            <div className="gpt-toolbar-left">
+          {/* Bottom Toolbar inside console */}
+          <div className="tech-console-toolbar">
+            <div className="tech-toolbar-tools">
               {/* Attach File */}
               <button
                 type="button"
-                className="btn-gpt-tool"
-                title="แนบไฟล์หรือรูปภาพ"
+                className="tech-tool-btn"
+                title="แนบไฟล์ข้อมูล (Code, Text, Config)"
                 onClick={() => fileInputRef.current?.click()}
               >
                 <span className="material-symbols-outlined">attach_file</span>
@@ -120,34 +120,34 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
               {/* Web Search Toggle */}
               <button
                 type="button"
-                className={`gpt-pill-tool ${webSearchActive ? 'active' : ''}`}
+                className={`tech-toggle-pill ${webSearchActive ? 'active' : ''}`}
                 onClick={onToggleWebSearch}
-                title="ค้นหาเว็บ (Web Search)"
+                title="ค้นหาข้อมูลออนไลน์สด"
               >
-                <span className="material-symbols-outlined">public</span>
+                <span className="material-symbols-outlined">travel_explore</span>
                 <span>ค้นหาเว็บ</span>
               </button>
 
               {/* Deep Reasoning Toggle */}
               <button
                 type="button"
-                className={`gpt-pill-tool ${deepReasoningActive ? 'active' : ''}`}
+                className={`tech-toggle-pill ${deepReasoningActive ? 'active' : ''}`}
                 onClick={onToggleDeepReasoning}
-                title="โหมดคิดวิเคราะห์เชิงลึก"
+                title="เปิดโหมดคิดวิเคราะห์ตรรกะเชิงลึก"
               >
                 <span className="material-symbols-outlined">psychology</span>
                 <span>คิดเชิงลึก</span>
               </button>
             </div>
 
-            {/* Right: Send Button */}
-            <div className="gpt-toolbar-right">
+            {/* Right: Send Action */}
+            <div className="tech-toolbar-action">
               <button
                 type="button"
-                className={`btn-gpt-send ${canSend ? 'active' : ''}`}
+                className={`tech-btn-send ${canSend ? 'active' : ''}`}
                 onClick={onSend}
                 disabled={!canSend}
-                title={isStreaming ? 'กำลังตอบคำถาม...' : 'ส่งข้อความ (Enter)'}
+                title={isStreaming ? 'กำลังประมวลผลคำตอบ...' : 'ส่งคำถาม (Enter)'}
                 aria-label="Send message"
               >
                 <span className={`material-symbols-outlined ${isStreaming ? 'spin-icon' : ''}`}>
@@ -158,12 +158,14 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
           </div>
         </div>
 
-        {/* Disclaimer Note */}
-        <div className="gpt-disclaimer">
-          Aetheris อาจแสดงข้อมูลที่ไม่ถูกต้อง กรุณาตรวจสอบข้อมูลสำคัญ
+        {/* Tech System Tagline */}
+        <div className="tech-disclaimer-bar">
+          <span className="tech-mini-dot"></span>
+          <span>Aetheris Autonomous AI System • Ultra-fast, High-performance & Token-efficient</span>
         </div>
       </div>
     </footer>
   );
 };
+
 export default PromptDeck;

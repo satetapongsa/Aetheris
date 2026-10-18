@@ -23,8 +23,12 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
   onRetry
 }) => {
   const [expandedThoughts, setExpandedThoughts] = useState<Record<number, boolean>>({});
-  const [copiedCodeIdx, setCopiedCodeIdx] = useState<number | null>(null);
+  const [copiedCodeKey, setCopiedCodeKey] = useState<string | null>(null);
+  const [showScrollBottom, setShowScrollBottom] = useState<boolean>(false);
+
   const viewportRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const isUserScrolledUpRef = useRef<boolean>(false);
 
   const toggleThought = (idx: number) => {
     setExpandedThoughts(prev => ({
@@ -33,30 +37,68 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
     }));
   };
 
-  const handleCopyCode = (code: string, idx: number) => {
+  const handleCopyCode = (code: string, key: string) => {
     onCopyText(code, 'คัดลอกโค้ดไปยังคลิปบอร์ดแล้ว');
-    setCopiedCodeIdx(idx);
+    setCopiedCodeKey(key);
     setTimeout(() => {
-      setCopiedCodeIdx(null);
+      setCopiedCodeKey(null);
     }, 2000);
   };
 
-  useEffect(() => {
-    if (viewportRef.current) {
-      viewportRef.current.scrollTop = viewportRef.current.scrollHeight;
+  // Scroll to absolute bottom
+  const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
+    if (bottomRef.current) {
+      bottomRef.current.scrollIntoView({ behavior });
+      isUserScrolledUpRef.current = false;
+      setShowScrollBottom(false);
     }
-  }, [session?.messages, isStreaming]);
+  };
+
+  // Detect user scrolling
+  const handleScroll = () => {
+    if (!viewportRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = viewportRef.current;
+    const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+
+    // If user scrolled up more than 120px from bottom
+    if (distanceFromBottom > 120) {
+      isUserScrolledUpRef.current = true;
+      setShowScrollBottom(true);
+    } else {
+      isUserScrolledUpRef.current = false;
+      setShowScrollBottom(false);
+    }
+  };
+
+  // Auto-scroll on new messages or during AI streaming ONLY if user is not reviewing previous messages
+  useEffect(() => {
+    if (!isUserScrolledUpRef.current) {
+      scrollToBottom('smooth');
+    }
+  }, [session?.messages, isStreaming, streamingStatusText]);
+
+  // When active session changes, reset and scroll to bottom instantly
+  useEffect(() => {
+    isUserScrolledUpRef.current = false;
+    setShowScrollBottom(false);
+    scrollToBottom('auto');
+  }, [session?.id]);
+
+  const escapeHtml = (str: string) => {
+    return str
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  };
 
   const formatCodeSyntax = (code: string) => {
     return code.split('\n').map((line, i) => {
-      let formatted = line
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
+      let formatted = escapeHtml(line);
 
       formatted = formatted.replace(
-        /\b(import|export|from|function|const|let|var|return|type|async|await)\b/g,
+        /\b(import|export|from|function|const|let|var|return|type|interface|class|async|await|if|else|for|while|try|catch|new|def|public|private)\b/g,
         '<span class="syntax-keyword">$1</span>'
       );
       formatted = formatted.replace(
@@ -64,21 +106,18 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
         '<span class="syntax-string">$1</span>'
       );
       formatted = formatted.replace(
-        /\b(string|number|boolean|ProfileState|Event|void|any)\b/g,
+        /\b(string|number|boolean|void|any|Promise|Array|Record|null|undefined|true|false)\b/g,
         '<span class="syntax-type">$1</span>'
       );
       formatted = formatted.replace(
-        /(\/\/.*$)/g,
+        /(\/\/.*$|#.*$)/g,
         '<span class="syntax-comment">$1</span>'
       );
 
       return (
-        <span key={i} style={{ display: 'block' }}>
-          <span style={{ color: 'var(--outline)', userSelect: 'none', display: 'inline-block', width: '28px', fontSize: '11px' }}>
-            {i + 1}
-          </span>
-          {'  '}
-          <span dangerouslySetInnerHTML={{ __html: formatted }} />
+        <span key={i} className="code-line-row">
+          <span className="code-line-num">{i + 1}</span>
+          <span className="code-line-text" dangerouslySetInnerHTML={{ __html: formatted }} />
         </span>
       );
     });
@@ -86,7 +125,7 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
 
   const formatMarkdown = (text: string): string => {
     if (!text) return '';
-    let res = text;
+    let res = escapeHtml(text);
     // Bold **text**
     res = res.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     // Italic *text*
@@ -98,18 +137,139 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
     return res;
   };
 
+  // Helper to render mixed paragraph with markdown code blocks: ```lang ... ```
+  const renderParagraphContent = (p: string, msgIdx: number, pIdx: number) => {
+    if (!p.includes('```')) {
+      return <p key={pIdx} className="ai-paragraph" dangerouslySetInnerHTML={{ __html: formatMarkdown(p) }} />;
+    }
+
+    const segments: React.ReactNode[] = [];
+    const parts = p.split(/(```[\s\S]*?```)/g);
+
+    parts.forEach((part, partIdx) => {
+      if (!part) return;
+      if (part.startsWith('```') && part.endsWith('```')) {
+        const lines = part.slice(3, -3).split('\n');
+        const lang = lines[0].trim() || 'code';
+        const codeText = lines.slice(1).join('\n').trim() || lines[0];
+        const key = `inline-${msgIdx}-${pIdx}-${partIdx}`;
+
+        segments.push(
+          <div key={key} className="code-block-wrapper">
+            <div className="code-header-bar">
+              <div className="code-title-group">
+                <span className="material-symbols-outlined text-tech-accent" style={{ fontSize: '15px' }}>
+                  terminal
+                </span>
+                <span className="filename-text">{lang}</span>
+                <span className="lang-badge">{lang.toUpperCase()}</span>
+              </div>
+              <button
+                className="btn-copy-code"
+                onClick={() => handleCopyCode(codeText, key)}
+              >
+                <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>
+                  {copiedCodeKey === key ? 'check' : 'content_copy'}
+                </span>
+                <span>{copiedCodeKey === key ? 'คัดลอกแล้ว!' : 'คัดลอกโค้ด'}</span>
+              </button>
+            </div>
+            <pre className="code-pre">
+              <code>{formatCodeSyntax(codeText)}</code>
+            </pre>
+          </div>
+        );
+      } else {
+        segments.push(
+          <p key={`p-${partIdx}`} className="ai-paragraph" dangerouslySetInnerHTML={{ __html: formatMarkdown(part) }} />
+        );
+      }
+    });
+
+    return <div key={pIdx} className="ai-mixed-block">{segments}</div>;
+  };
+
   const hasMessages = session && session.messages && session.messages.length > 0;
 
   return (
-    <section className="chat-viewport custom-scroll" ref={viewportRef}>
+    <section
+      className="chat-viewport custom-scroll"
+      ref={viewportRef}
+      onScroll={handleScroll}
+    >
       <div className="chat-thread-container">
-        {/* Clean GPT-style Empty State (When no messages yet) */}
+        {/* Clean Tech Empty State (When no messages yet) */}
         {!hasMessages ? (
-          <div className="gpt-empty-center">
-            <div className="gpt-brand-emblem">
-              <img src="/aetheris-logo.png" alt="Aetheris" className="gpt-empty-logo-img" />
+          <div className="tech-empty-state">
+            <div className="tech-hero-badge">
+              <span className="tech-glow-dot"></span>
+              <span className="tech-badge-text">AETHERIS TECH AI PLATFORM</span>
             </div>
-            <h1 className="gpt-empty-title">มีอะไรให้ Aetheris ช่วยวันนี้ไหม?</h1>
+
+            <div className="tech-logo-halo">
+              <img src="/aetheris-logo.png" alt="Aetheris AI" className="tech-main-logo" />
+            </div>
+
+            <h1 className="tech-hero-title">
+              ระบบแชท <span className="tech-gradient-text">Aetheris</span> สำหรับคุณ
+            </h1>
+            <p className="tech-hero-subtitle">
+              ปัญญาประดิษฐ์สถาปัตยกรรมระดับสูง ประมวลผลรวดเร็ว แม่นยำ เขียนโค้ด และตอบตรงประเด็น
+            </p>
+
+            <div className="tech-quick-grid">
+              <button
+                className="tech-card-action"
+                onClick={() => onSendSuggestion('เขียนโค้ด React TypeScript สำหรับเชื่อมต่อ API อย่างมีประสิทธิภาพ')}
+              >
+                <div className="tech-card-icon">
+                  <span className="material-symbols-outlined">code_blocks</span>
+                </div>
+                <div className="tech-card-info">
+                  <div className="tech-card-head">เขียนโค้ด TypeScript</div>
+                  <div className="tech-card-sub">ตัวอย่างคลีนโค้ดและ Type-safe</div>
+                </div>
+              </button>
+
+              <button
+                className="tech-card-action"
+                onClick={() => onSendSuggestion('ช่วยออกแบบสถาปัตยกรรมระบบคลาวด์ Microservices')}
+              >
+                <div className="tech-card-icon">
+                  <span className="material-symbols-outlined">dns</span>
+                </div>
+                <div className="tech-card-info">
+                  <div className="tech-card-head">ออกแบบสถาปัตยกรรมระบบ</div>
+                  <div className="tech-card-sub">High Performance & Scalable</div>
+                </div>
+              </button>
+
+              <button
+                className="tech-card-action"
+                onClick={() => onSendSuggestion('วิเคราะห์แนวทางการ Optimize Database Query ให้เร็วขึ้น 10 เท่า')}
+              >
+                <div className="tech-card-icon">
+                  <span className="material-symbols-outlined">speed</span>
+                </div>
+                <div className="tech-card-info">
+                  <div className="tech-card-head">Optimize Database</div>
+                  <div className="tech-card-sub">เพิ่มความเร็วและลด Latency</div>
+                </div>
+              </button>
+
+              <button
+                className="tech-card-action"
+                onClick={() => onSendSuggestion('ตรวจสอบวันเวลาและสภาพอากาศปัจจุบัน')}
+              >
+                <div className="tech-card-icon">
+                  <span className="material-symbols-outlined">schedule</span>
+                </div>
+                <div className="tech-card-info">
+                  <div className="tech-card-head">เช็ควันเวลาและสภาพอากาศ</div>
+                  <div className="tech-card-sub">ข้อมูลสดแบบเรียลไทม์</div>
+                </div>
+              </button>
+            </div>
           </div>
         ) : (
           /* Messages List */
@@ -127,6 +287,8 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
 
               // AI Assistant Message
               const isThoughtExpanded = !!expandedThoughts[idx];
+              const codeKey = `block-${idx}`;
+
               return (
                 <div key={idx} className="message-row assistant-row">
                   <div className="assistant-avatar">
@@ -136,6 +298,7 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
                   <div className="message-content assistant-content">
                     <div className="assistant-header">
                       <span className="assistant-name">Aetheris</span>
+                      <span className="tech-model-tag">AI CORE</span>
                     </div>
 
                     {/* Thought / Reasoning Bar */}
@@ -147,7 +310,7 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
                           onClick={() => toggleThought(idx)}
                         >
                           <div className="reasoning-left">
-                            <span className="material-symbols-outlined">psychology</span>
+                            <span className="material-symbols-outlined text-tech-accent">psychology</span>
                             <span>{msg.thoughtSummary}</span>
                           </div>
                           <span className="material-symbols-outlined text-outline">
@@ -162,31 +325,33 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
                       </div>
                     )}
 
-                    {/* Text Content */}
+                    {/* AI Text Content & Code Blocks */}
                     <div className="ai-text-content">
-                      {msg.paragraphs?.map((p, pIdx) => (
-                        <p key={pIdx} dangerouslySetInnerHTML={{ __html: formatMarkdown(p) }} />
-                      ))}
+                      {msg.paragraphs && msg.paragraphs.length > 0 ? (
+                        msg.paragraphs.map((p, pIdx) => renderParagraphContent(p, idx, pIdx))
+                      ) : msg.content ? (
+                        renderParagraphContent(msg.content, idx, 0)
+                      ) : null}
 
-                      {/* Code Block */}
+                      {/* Standalone Code Block if separated */}
                       {msg.codeBlock && (
                         <div className="code-block-wrapper">
                           <div className="code-header-bar">
                             <div className="code-title-group">
-                              <span className="material-symbols-outlined text-primary" style={{ fontSize: '16px' }}>
-                                code
+                              <span className="material-symbols-outlined text-tech-accent" style={{ fontSize: '15px' }}>
+                                terminal
                               </span>
                               <span className="filename-text">{msg.codeBlock.filename}</span>
                               <span className="lang-badge">{msg.codeBlock.language}</span>
                             </div>
                             <button
                               className="btn-copy-code"
-                              onClick={() => handleCopyCode(msg.codeBlock!.code, idx)}
+                              onClick={() => handleCopyCode(msg.codeBlock!.code, codeKey)}
                             >
                               <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>
-                                {copiedCodeIdx === idx ? 'check' : 'content_copy'}
+                                {copiedCodeKey === codeKey ? 'check' : 'content_copy'}
                               </span>
-                              <span>{copiedCodeIdx === idx ? 'Copied!' : 'Copy code'}</span>
+                              <span>{copiedCodeKey === codeKey ? 'คัดลอกแล้ว!' : 'คัดลอกโค้ด'}</span>
                             </button>
                           </div>
                           <pre className="code-pre">
@@ -196,13 +361,13 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
                       )}
                     </div>
 
-                    {/* Actions Row */}
+                    {/* Action Bar */}
                     <div className="assistant-actions-row">
                       <button
                         className="btn-action-icon"
                         title="คัดลอกคำตอบ"
                         onClick={() => {
-                          const fullText = (msg.paragraphs || []).join('\n\n');
+                          const fullText = (msg.paragraphs || []).join('\n\n') || msg.content || '';
                           onCopyText(fullText, 'คัดลอกข้อความแล้ว');
                         }}
                       >
@@ -231,7 +396,7 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
                       </button>
                     </div>
 
-                    {/* Optional Follow-up Suggestions */}
+                    {/* Follow-up suggestions */}
                     {msg.suggestions && msg.suggestions.length > 0 && (
                       <div className="followup-pills-row">
                         {msg.suggestions.map((sug, sIdx) => (
@@ -257,21 +422,36 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
         {isStreaming && (
           <div className="message-row assistant-row">
             <div className="assistant-avatar">
-              <svg viewBox="0 0 100 100" fill="none">
-                <circle cx="50" cy="50" r="44" fill="#1e1e24" stroke="rgba(255, 255, 255, 0.1)" strokeWidth="2"/>
-                <circle cx="50" cy="50" r="6" fill="#f0f0f5" className="pulse-circle" />
-              </svg>
+              <img src="/aetheris-logo.png" alt="Aetheris" className="assistant-avatar-img streaming-glow" />
             </div>
             <div className="message-content assistant-content">
               <div className="typing-stream-pill">
-                <span className="material-symbols-outlined spin-icon text-primary">progress_activity</span>
+                <span className="material-symbols-outlined spin-icon text-tech-accent">progress_activity</span>
                 <span>{streamingStatusText || 'กำลังคิดและตอบคำถาม...'}</span>
               </div>
             </div>
           </div>
         )}
+
+        {/* Anchor for auto scroll */}
+        <div ref={bottomRef} className="scroll-anchor" />
       </div>
+
+      {/* Floating Scroll-to-Bottom Fast Rocket Button */}
+      {showScrollBottom && (
+        <button
+          type="button"
+          className="tech-scroll-bottom-btn"
+          onClick={() => scrollToBottom('smooth')}
+          title="เลื่อนลงไปยังข้อความล่าสุด"
+          aria-label="Scroll to bottom"
+        >
+          <span className="material-symbols-outlined">arrow_downward</span>
+          <span className="tech-scroll-bottom-label">ล่าสุด</span>
+        </button>
+      )}
     </section>
   );
 };
+
 export default ChatViewport;

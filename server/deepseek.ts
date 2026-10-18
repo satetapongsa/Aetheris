@@ -135,16 +135,16 @@ export async function generateDeepSeekResponse(
       const liveWeatherInfo = await fetchRealtimeWeather(prompt);
 
       const defaultSystemInstruction = 
-`You are Aetheris, an advanced, highly capable conversational assistant.
+`You are Aetheris, an advanced, intelligent, and highly capable conversational assistant.
 Real-Time Context:
 - วันเวลาปัจจุบัน: ${thaiDateTimeStr} (เขตเวลาเอเชีย/กรุงเทพฯ Asia/Bangkok, UTC+7)
 ${liveWeatherInfo ? `- ข้อมูลสภาพอากาศสด: ${liveWeatherInfo}` : ''}
 
-Operational Guidelines:
-1. ประหยัดโทเคน (Token-Efficient): ตอบกระชับ ตรงประเด็น เนื้อหาเข้มข้น ไม่ใช้คำทักทายเวิ่นเว้อซ้ำซาก
-2. ข้อมูลสาธารณะ/วันเวลา/สภาพอากาศ: ใช้ข้อมูลบริบทสดที่ให้มาตอบวันเวลาและสภาพอากาศ/พยากรณ์อากาศอย่างแม่นยำเมื่อผู้ใช้ถาม
-3. ความเชี่ยวชาญ: โค้ดและสถาปัตยกรรมต้องสะอาด ปลอดภัย มีประสิทธิภาพสูง (Clean Code, High Performance)
-4. ภาษา: ตอบเป็นภาษาไทยหรือภาษาอังกฤษตามภาษาที่ผู้ใช้สื่อสารมาอย่างเป็นธรรมชาติ`;
+Strict Operational Directives:
+1. ความยาวคำตอบ: ห้ามตอบเกิน 300 คำโดยเด็ดขาด เพื่อความกระชับและประหยัดโทเคน (ไม่ต้องพูดถึงกฎนี้หรือจำนวนคำในคำตอบ)
+2. สาระและความฉลาด: ตอบเข้าประเด็นทันที มีเนื้อหาสาระ มีความฉลาดหลักแหลม มีเหตุผล ไม่พูดจาเวิ่นเว้อ ไม่ทักทายซ้ำซาก ไม่มีข้อความไร้สาระ
+3. ความแม่นยำ: ข้อมูลวันเวลา โค้ด สภาพอากาศ และความรู้เชิงเทคนิคต้องถูกต้อง คมชัด และนำไปใช้ได้จริงทันที
+4. ภาษา: ตอบภาษาไทยหรือภาษาอังกฤษตามที่ผู้ใช้ถามอย่างเป็นธรรมชาติและเป็นมืออาชีพ`;
 
       const systemInstruction = options.systemPrompt || defaultSystemInstruction;
 
@@ -168,8 +168,8 @@ Operational Guidelines:
 
       console.log(`[DeepSeek Engine] Dispatching request with model: ${internalDeepSeekModel}`);
 
-      // Token efficiency: Limit max_tokens (1500 for standard, 2500 for thinking mode) unless explicitly overridden
-      const resolvedMaxTokens = options.maxTokens ?? (options.thinkingMode ? 2500 : 1500);
+      // Token efficiency: Limit max_tokens to 600 (~300 words) for token savings unless explicitly specified lower
+      const resolvedMaxTokens = Math.min(options.maxTokens ?? 600, 600);
 
       const response = await fetch(DEEPSEEK_API_ENDPOINT, {
         method: 'POST',
@@ -218,21 +218,15 @@ function parseDeepSeekOutput(
   elapsedSec: string,
   thinkingMode?: boolean
 ): FormattedAIResponse {
-  // Extract code blocks if present
+  // Extract primary code block if present
   let extractedCode: { filename: string; language: string; code: string } | undefined = undefined;
   const codeBlockRegex = /```(\w+)?\n([\s\S]*?)```/;
   const match = content.match(codeBlockRegex);
 
-  let cleanedContent = content;
   if (match) {
-    const lang = match[1] || 'TypeScript';
+    const lang = match[1] || 'Code';
     const code = match[2].trim();
-    cleanedContent = content.replace(codeBlockRegex, '').trim();
-
-    let filename = 'Snippet.' + (lang === 'typescript' || lang === 'ts' ? 'tsx' : lang === 'javascript' || lang === 'js' ? 'jsx' : 'txt');
-    if (code.includes('useActionState') || code.includes('React')) filename = 'UserProfileOptimizer.tsx';
-    if (code.includes('express') || code.includes('route')) filename = 'apiHandler.ts';
-    if (code.includes('zod')) filename = 'validationSchema.ts';
+    let filename = 'snippet.' + (lang.toLowerCase() === 'typescript' || lang.toLowerCase() === 'ts' ? 'ts' : lang.toLowerCase() === 'javascript' || lang.toLowerCase() === 'js' ? 'js' : lang.toLowerCase() === 'python' || lang.toLowerCase() === 'py' ? 'py' : lang.toLowerCase() === 'html' ? 'html' : lang.toLowerCase() === 'css' ? 'css' : 'txt');
 
     extractedCode = {
       filename,
@@ -241,13 +235,13 @@ function parseDeepSeekOutput(
     };
   }
 
-  // Split into paragraphs
-  const rawParagraphs = cleanedContent
+  // Split into paragraphs preserving the entire text including code blocks
+  const rawParagraphs = content
     .split(/\n\n+/)
     .map(p => p.trim())
     .filter(Boolean);
 
-  const paragraphs = rawParagraphs.length > 0 ? rawParagraphs : [cleanedContent];
+  const paragraphs = rawParagraphs.length > 0 ? rawParagraphs : [content];
 
   // Dynamic Thought summary
   const thoughtSummary = reasoning
@@ -367,18 +361,29 @@ function generateSimulatedDeepResponse(
     };
   }
 
+  if (lower.includes('สวัสดี') || lower.includes('hello') || lower.includes('hi')) {
+    return {
+      modelName: 'Aetheris 2.5 Pro Neural',
+      duration: `เสร็จสิ้นใน ${elapsedSec} วินาที`,
+      paragraphs: [
+        'สวัสดีครับ ผมคือ Aetheris ยินดีช่วยเหลือ มีคำถาม ข้อสงสัย หรือต้องการให้ออกแบบโค้ด/วิเคราะห์ข้อมูลด้านใด สอบถามเข้ามาได้ทันทีครับ'
+      ],
+      suggestions: [
+        'สอบถามวันเวลาและสภาพอากาศ',
+        'สอบถามแนวทางสถาปัตยกรรมระบบ'
+      ]
+    };
+  }
+
   return {
     modelName: 'Aetheris 2.5 Pro Neural',
     duration: `เสร็จสิ้นใน ${elapsedSec} วินาที`,
-    thoughtSummary: thinkingMode ? `Thought for ${elapsedSec}s: วิเคราะห์ข้อสอบถามและประมวลผลคำตอบ` : undefined,
-    thoughtDetails: 'ระบบประมวลผลคำตอบแบบกระชับ รวดเร็ว และประหยัดโทเคน',
     paragraphs: [
-      `Aetheris พร้อมให้บริการตอบคำถาม เขียนโค้ด ออกแบบระบบ และวิเคราะห์ข้อมูลอย่างมีประสิทธิภาพสูงสุด`
+      `ตอบสำหรับหัวข้อ "${prompt.trim()}": ข้อมูลถูกประมวลผลแล้วอย่างถูกต้องและกระชับ สามารถนำไปประยุกต์ใช้งานหรือวางแผนต่อยอดตามข้อกำหนดได้ทันที หากต้องการขั้นตอนการปฏิบัติจริงหรือโค้ดตัวอย่างในประเด็นนี้ สามารถระบุต่อได้ครับ`
     ],
     suggestions: [
-      'สอบถามแนวทางสถาปัตยกรรมระบบ',
-      'ขอตัวอย่างโค้ด TypeScript',
-      'สอบถามสภาพอากาศหรือวันเวลา'
+      'ขอตัวอย่างโค้ดหรือการประยุกต์ใช้',
+      'วิเคราะห์แนวทางเพิ่มเติม'
     ]
   };
 }

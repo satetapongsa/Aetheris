@@ -206,16 +206,29 @@ export function App() {
   };
 
   const generateContextualResponse = (prompt: string): Message => {
+    const p = prompt.trim();
+    const lower = p.toLowerCase();
+    let answer = '';
+
+    if (lower.includes('เวลา') || lower.includes('กี่โมง') || lower.includes('time') || lower.includes('date') || lower.includes('วัน')) {
+      const nowStr = new Intl.DateTimeFormat('th-TH', {
+        timeZone: 'Asia/Bangkok',
+        dateStyle: 'full',
+        timeStyle: 'medium'
+      }).format(new Date());
+      answer = `ขณะนี้คือ ${nowStr} (เวลาประเทศไทย ICT)`;
+    } else if (lower.includes('สวัสดี') || lower.includes('hello') || lower.includes('hi')) {
+      answer = 'สวัสดีครับ ผม Aetheris ยินดีช่วยเหลือ มีคำถามหรือต้องการให้ช่วยงานด้านใด สอบถามได้ทันทีครับ';
+    } else if (lower.includes('ใครสร้าง') || lower.includes('ผู้สร้าง') || lower.includes('คือใคร') || lower.includes('who are you')) {
+      answer = 'ผมคือ Aetheris ผู้ช่วยปัญญาประดิษฐ์อัจฉริยะ ออกแบบมาเพื่อตอบคำถาม วิเคราะห์ข้อมูล เขียนโค้ด และแก้ปัญหาเชิงตรรกะอย่างกระชับ รวดเร็ว และแม่นยำ';
+    } else {
+      answer = `ได้รับคำถามแล้วครับ: "${p}" สำหรับประเด็นนี้สามารถวิเคราะห์และดำเนินการได้โดยคำนึงถึงเป้าหมาย ความถูกต้อง และความคุ้มค่าในการใช้งาน หากต้องการให้ลงรายละเอียด ขั้นตอนการทำ หรือตัวอย่างโค้ด แจ้งข้อมูลเพิ่มเติมได้ทันทีครับ`;
+    }
+
     return {
       sender: 'ai',
       modelName: 'Aetheris',
-      paragraphs: [
-        `ขณะนี้ Aetheris เชื่อมต่อผ่าน backend พร้อมตอบคำถามของคุณอย่างรวดเร็วและแม่นยำเกี่ยวกับ: <strong>${prompt}</strong>`
-      ],
-      suggestions: [
-        'สอบถามข้อมูลเพิ่มเติม',
-        'ขอตัวอย่างโค้ดหรือการประยุกต์ใช้'
-      ]
+      paragraphs: [answer]
     };
   };
 
@@ -235,8 +248,8 @@ export function App() {
   };
 
   return (
-    <div className="gpt-app-container">
-      {/* 1. Sidebar */}
+    <div className="tech-app-container">
+      {/* 1. Tech Sidebar */}
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -253,8 +266,8 @@ export function App() {
         onOpenSettings={() => setSettingsModalOpen(true)}
       />
 
-      {/* 2. Main Workspace */}
-      <main className="gpt-main-workspace">
+      {/* 2. Main Tech Workspace */}
+      <main className="tech-main-workspace">
         <TopNav
           currentModel={currentModel}
           onSelectModel={setCurrentModel}
