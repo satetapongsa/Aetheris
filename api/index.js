@@ -129,7 +129,8 @@ var dbSessions = {
     if (isNeonConfigured && sqlClient) {
       await sqlClient`
         INSERT INTO sessions (id, user_id, title, topic, category, icon, created_at, updated_at)
-        VALUES (${session.id}, ${session.user_id}, ${session.title}, ${session.topic}, ${session.category}, ${session.icon}, ${session.created_at}, ${session.updated_at});
+        VALUES (${session.id}, ${session.user_id}, ${session.title}, ${session.topic}, ${session.category}, ${session.icon}, ${session.created_at}, ${session.updated_at})
+        ON CONFLICT (id) DO UPDATE SET updated_at = EXCLUDED.updated_at, title = EXCLUDED.title, topic = EXCLUDED.topic;
       `;
       return session;
     }
