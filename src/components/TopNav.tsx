@@ -21,7 +21,7 @@ export const TopNav: React.FC<TopNavProps> = ({
   onSelectModel,
   onOpenLogin,
   currentUser,
-  sidebarCollapsed,
+  sidebarCollapsed: _sidebarCollapsed,
   onToggleSidebar
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -40,28 +40,26 @@ export const TopNav: React.FC<TopNavProps> = ({
   return (
     <header className="tech-header">
       <div className="tech-header-left">
-        {/* Toggle Sidebar Button (shown when sidebar is closed or on mobile devices) */}
+        {/* Toggle Sidebar Button - always on mobile, and on desktop when collapsed */}
         <button
-          className={`tech-icon-btn ${sidebarCollapsed ? 'show-desktop' : 'hide-desktop'} mobile-menu-btn`}
+          type="button"
+          className="tech-icon-btn mobile-sidebar-toggle-btn"
           onClick={onToggleSidebar}
-          aria-label="Open sidebar"
+          aria-label="Toggle navigation menu"
           title="เปิดแถบเมนูประวัติแชท"
         >
           <span className="material-symbols-outlined">menu</span>
         </button>
 
-        {/* AI Brand / Profile Logo (Desktop only when collapsed) */}
-        {sidebarCollapsed && (
-          <div className="tech-header-brand" title="Aetheris AI Platform">
-            <div className="tech-header-logo-wrap">
-              <img src="/aetheris-logo.png" alt="Aetheris" className="tech-header-logo-img" />
-            </div>
-            <div className="tech-header-titles">
-              <span className="tech-header-brand-name">AETHERIS</span>
-              <span className="tech-header-brand-sub">AI CORE</span>
-            </div>
+        {/* AI Brand / Profile Logo */}
+        <div className="tech-header-brand" title="Aetheris AI Platform">
+          <div className="tech-header-logo-wrap">
+            <img src="/aetheris-logo.png" alt="Aetheris" className="tech-header-logo-img" />
           </div>
-        )}
+          <div className="tech-header-titles">
+            <span className="tech-header-brand-name">AETHERIS</span>
+          </div>
+        </div>
 
         {/* Model Selector Pill */}
         <div className="tech-model-dropdown-wrapper" ref={dropdownRef}>

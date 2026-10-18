@@ -321,8 +321,11 @@ export function App() {
           currentUser={currentUser}
           sidebarCollapsed={sidebarCollapsed}
           onToggleSidebar={() => {
-            setSidebarCollapsed(false);
-            setMobileSidebarOpen(true);
+            if (window.innerWidth <= 768) {
+              setMobileSidebarOpen(prev => !prev);
+            } else {
+              setSidebarCollapsed(prev => !prev);
+            }
           }}
         />
 

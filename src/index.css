@@ -1764,25 +1764,73 @@ html, body {
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .tech-sidebar {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    transform: translateX(-100%);
-    box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+    position: fixed !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    width: 280px !important;
+    z-index: 9999 !important;
+    transform: translateX(-100%) !important;
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    box-shadow: 4px 0 35px rgba(0, 0, 0, 0.95) !important;
   }
 
   .tech-sidebar.mobile-open {
-    transform: translateX(0);
-    width: 270px;
+    transform: translateX(0) !important;
+  }
+
+  .tech-sidebar-backdrop {
+    z-index: 9998 !important;
   }
 
   .tech-header {
-    padding: 0 12px;
+    padding: 0 10px;
+    height: 52px;
+  }
+
+  .mobile-sidebar-toggle-btn {
+    display: flex !important;
+    min-width: 36px;
+    height: 36px;
+  }
+
+  .tech-header-brand {
+    display: flex !important;
+  }
+
+  .tech-header-brand-name {
+    display: none;
   }
 
   .tech-system-status {
     display: none;
+  }
+
+  .tech-model-dropdown-wrapper {
+    max-width: 150px;
+  }
+
+  .tech-model-pill {
+    padding: 4px 8px;
+    font-size: 12px;
+  }
+
+  .tech-model-current-name {
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tech-btn-signup {
+    display: none;
+  }
+
+  .tech-btn-signin {
+    padding: 4px 10px;
+    font-size: 12px;
   }
 
   .tech-quick-grid {
@@ -1790,15 +1838,15 @@ html, body {
   }
 
   .chat-thread-container {
-    padding: 14px 12px 180px;
+    padding: 12px 10px 170px;
   }
 
   .tech-hero-title {
-    font-size: 22px;
+    font-size: 20px;
   }
 
   .tech-hero-subtitle {
-    font-size: 13px;
+    font-size: 12px;
   }
 
   .user-content {
@@ -1806,26 +1854,23 @@ html, body {
   }
 
   .tech-input-dock {
-    padding: 0 12px 12px;
+    padding: 0 10px 10px;
   }
 
   .tech-scroll-bottom-btn {
-    bottom: 110px;
-    right: 16px;
-  }
-
-  .mobile-menu-btn {
-    display: flex !important;
+    bottom: 105px;
+    right: 14px;
   }
 }
 
-/* Visibility helpers for menu button */
-.hide-desktop {
-  display: none;
-}
+@media (min-width: 769px) {
+  .mobile-sidebar-toggle-btn {
+    display: none;
+  }
 
-.show-desktop {
-  display: flex;
+  .tech-sidebar.collapsed + .tech-main-workspace .mobile-sidebar-toggle-btn {
+    display: flex;
+  }
 }
 
 /* Profile Info in Modal */
