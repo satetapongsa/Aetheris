@@ -308,8 +308,8 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
                         renderParagraphContent(msg.content, idx, 0)
                       ) : null}
 
-                      {/* Standalone Code Block if separated */}
-                      {msg.codeBlock && (
+                      {/* Standalone Code Block if separated and not already embedded in paragraphs */}
+                      {msg.codeBlock && (!msg.paragraphs || !msg.paragraphs.some(p => p.includes('```'))) && (
                         <div className="code-block-wrapper">
                           <div className="code-header-bar">
                             <div className="code-title-group">
