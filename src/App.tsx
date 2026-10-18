@@ -7,7 +7,7 @@ import { LoginModal } from './components/LoginModal';
 import { CheckoutModal } from './components/CheckoutModal';
 import { SettingsModal } from './components/SettingsModal';
 import { ToastContainer } from './components/ToastContainer';
-import { authService, chatService } from './services/api';
+import { authService, chatService, sessionService } from './services/api';
 import { INITIAL_SESSIONS, INITIAL_USER } from './data/initialData';
 import type { ChatSession, Message, ModelId, ModelParameterState, ToastMessage, User } from './types';
 
@@ -40,7 +40,7 @@ export function App() {
 
   // Fixed Standard System Parameters (Defined by Founder, locked)
   const [parameters] = useState<ModelParameterState>({
-    temperature: 0.75, // standard 7-8 range
+    temperature: 0.75,
     topP: 0.95,
     maxTokens: 4096,
     systemPrompt: '',
@@ -58,14 +58,53 @@ export function App() {
     }, 3500);
   };
 
-  // Check saved session on mount
-  useEffect(() => {
-    authService.getMe().then(user => {
+  // Load User and their private chat sessions from Neon Database
+  const loadUserDataAndSessions = async () => {
+    try {
+      const user = await authService.getMe();
       if (user) {
         setCurrentUser(user);
+        const userSessions = await sessionService.listSessions();
+        if (userSessions.length > 0) {
+          setSessions(userSessions);
+          setActiveSessionId(userSessions[0].id);
+          // Load messages for the first session
+          loadSessionMessages(userSessions[0].id);
+        } else {
+          handleNewChat();
+        }
       }
-    });
+    } catch {
+      // Offline or unauthenticated
+    }
+  };
+
+  const loadSessionMessages = async (sessionId: string) => {
+    if (sessionId.startsWith('sess-new')) return;
+    try {
+      const messages = await sessionService.getMessages(sessionId);
+      if (messages && messages.length > 0) {
+        setSessions(prev =>
+          prev.map(s => (s.id === sessionId ? { ...s, messages } : s))
+        );
+      }
+    } catch {
+      // Handle gracefully
+    }
+  };
+
+  useEffect(() => {
+    loadUserDataAndSessions();
   }, []);
+
+  // When switching active session, fetch messages if empty
+  const handleSelectSession = (sessionId: string) => {
+    setActiveSessionId(sessionId);
+    const target = sessions.find(s => s.id === sessionId);
+    if (target && (!target.messages || target.messages.length === 0)) {
+      loadSessionMessages(sessionId);
+    }
+  };
 
   // Keyboard Shortcuts
   useEffect(() => {
@@ -88,7 +127,14 @@ export function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
+  const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0] || {
+    id: 'sess-new',
+    title: 'การสนทนาใหม่',
+    topic: 'บทสนทนาใหม่กับ Aetheris',
+    category: 'today',
+    icon: 'chat_bubble',
+    messages: []
+  };
 
   const handleNewChat = () => {
     const newId = 'sess-' + Date.now();
@@ -222,7 +268,7 @@ export function App() {
     } else if (lower.includes('ใครสร้าง') || lower.includes('ผู้สร้าง') || lower.includes('คือใคร') || lower.includes('who are you')) {
       answer = 'ผมคือ Aetheris ผู้ช่วยปัญญาประดิษฐ์อัจฉริยะ ออกแบบมาเพื่อตอบคำถาม วิเคราะห์ข้อมูล เขียนโค้ด และแก้ปัญหาเชิงตรรกะอย่างกระชับ รวดเร็ว และแม่นยำ';
     } else {
-      answer = `ได้รับคำถามแล้วครับ: "${p}" สำหรับประเด็นนี้สามารถวิเคราะห์และดำเนินการได้โดยคำนึงถึงเป้าหมาย ความถูกต้อง และความคุ้มค่าในการใช้งาน หากต้องการให้ลงรายละเอียด ขั้นตอนการทำ หรือตัวอย่างโค้ด แจ้งข้อมูลเพิ่มเติมได้ทันทีครับ`;
+      answer = `ได้รับคำถามแล้วครับ: "${p}" สำหรับประเด็นนี้สามารถวิเคราะห์และดำเนินการได้ทันที หากต้องการขั้นตอนการปฏิบัติจริงหรือโค้ดตัวอย่าง แจ้งเพิ่มเติมได้ครับ`;
     }
 
     return {
@@ -257,7 +303,7 @@ export function App() {
         onCloseMobile={() => setMobileSidebarOpen(false)}
         sessions={sessions}
         activeSessionId={activeSessionId}
-        onSelectSession={setActiveSessionId}
+        onSelectSession={handleSelectSession}
         onNewChat={handleNewChat}
         searchQuery={searchQuery}
         onSearchChange={setSearchQuery}
@@ -299,7 +345,7 @@ export function App() {
           }}
         />
 
-        {/* 4. GPT Input Dock */}
+        {/* 4. Console Input Dock */}
         <PromptDeck
           promptText={promptText}
           onPromptChange={setPromptText}
@@ -320,8 +366,9 @@ export function App() {
         isOpen={loginModalOpen}
         onClose={() => setLoginModalOpen(false)}
         onLoginSuccess={(updated) => {
-          setCurrentUser(prev => ({ ...prev, ...updated }));
-          showToast(`ยินดีต้อนรับ ${updated.name || currentUser.name}!`, 'success', 'check');
+          setCurrentUser(prev => ({ ...prev, ...updated, isLoggedIn: true }));
+          showToast(`ยินดีต้อนรับ ${updated.name || currentUser.name}! เข้าสู่ระบบสำเร็จ`, 'success', 'check');
+          loadUserDataAndSessions();
         }}
       />
 
@@ -344,4 +391,5 @@ export function App() {
     </div>
   );
 }
+
 export default App;

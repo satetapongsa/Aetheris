@@ -1,4 +1,4 @@
-import type { Message, User } from '../types';
+import type { ChatSession, Message, User } from '../types';
 
 const API_BASE = '/api';
 
@@ -69,7 +69,7 @@ export const authService = {
         return null;
       }
       const data = await parseJsonResponse<{ user: User }>(res, 'Failed to load user');
-      return data.user;
+      return { ...data.user, isLoggedIn: true };
     } catch {
       return null;
     }
@@ -77,6 +77,78 @@ export const authService = {
 
   logout() {
     localStorage.removeItem('aetheris_token');
+  }
+};
+
+export const sessionService = {
+  async listSessions(): Promise<ChatSession[]> {
+    try {
+      const res = await fetch(`${API_BASE}/sessions`, {
+        headers: getAuthHeader()
+      });
+      if (!res.ok) return [];
+      const data = await parseJsonResponse<{ sessions: any[] }>(res, 'Failed to list sessions');
+      return (data.sessions || []).map(s => ({
+        id: s.id,
+        title: s.title,
+        topic: s.topic,
+        category: s.category || 'today',
+        icon: s.icon || 'chat_bubble',
+        messages: []
+      }));
+    } catch {
+      return [];
+    }
+  },
+
+  async getMessages(sessionId: string): Promise<Message[]> {
+    try {
+      const res = await fetch(`${API_BASE}/sessions/${sessionId}/messages`, {
+        headers: getAuthHeader()
+      });
+      if (!res.ok) return [];
+      const data = await parseJsonResponse<{ messages: Message[] }>(res, 'Failed to fetch messages');
+      return data.messages || [];
+    } catch {
+      return [];
+    }
+  },
+
+  async createSession(title: string, topic?: string): Promise<ChatSession | null> {
+    try {
+      const res = await fetch(`${API_BASE}/sessions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...getAuthHeader()
+        },
+        body: JSON.stringify({ title, topic })
+      });
+      if (!res.ok) return null;
+      const data = await parseJsonResponse<{ session: any }>(res, 'Failed to create session');
+      return {
+        id: data.session.id,
+        title: data.session.title,
+        topic: data.session.topic,
+        category: data.session.category || 'today',
+        icon: data.session.icon || 'chat_bubble',
+        messages: []
+      };
+    } catch {
+      return null;
+    }
+  },
+
+  async deleteSession(sessionId: string): Promise<boolean> {
+    try {
+      const res = await fetch(`${API_BASE}/sessions/${sessionId}`, {
+        method: 'DELETE',
+        headers: getAuthHeader()
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
   }
 };
 
