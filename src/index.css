@@ -1838,28 +1838,107 @@ html, body {
   }
 
   .chat-thread-container {
-    padding: 12px 10px 170px;
+    padding: 12px 10px 160px;
   }
 
   .tech-hero-title {
-    font-size: 20px;
+    font-size: 19px;
+    line-height: 1.35;
   }
 
   .tech-hero-subtitle {
     font-size: 12px;
+    padding: 0 8px;
   }
 
   .user-content {
-    max-width: 90%;
+    max-width: 88%;
+  }
+
+  .user-bubble {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+
+  .ai-response-card {
+    padding: 12px 10px;
+  }
+
+  .ai-paragraph {
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .code-block-wrapper {
+    margin: 10px 0;
+    border-radius: 8px;
+    max-width: 100%;
+  }
+
+  .code-pre {
+    padding: 10px 8px;
+    font-size: 12px;
+    overflow-x: auto;
+  }
+
+  .code-header-bar {
+    padding: 6px 10px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .btn-copy-code {
+    padding: 3px 8px;
+    font-size: 11px;
   }
 
   .tech-input-dock {
-    padding: 0 10px 10px;
+    padding: 0 8px 10px;
+  }
+
+  .tech-console-box {
+    border-radius: 12px;
+  }
+
+  .tech-textarea {
+    font-size: 14px;
+    padding: 10px 12px 4px;
+  }
+
+  .tech-console-toolbar {
+    padding: 4px 8px 8px;
+    gap: 6px;
+  }
+
+  .tech-toolbar-tools {
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .tech-toggle-pill {
+    padding: 3px 8px;
+    font-size: 11px;
+    gap: 3px;
+  }
+
+  .tech-toggle-pill .material-symbols-outlined {
+    font-size: 14px;
   }
 
   .tech-scroll-bottom-btn {
-    bottom: 105px;
-    right: 14px;
+    bottom: 95px;
+    right: 12px;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .modal-overlay {
+    padding: 12px;
+  }
+
+  .modal-card {
+    padding: 18px 14px;
+    max-width: 100%;
   }
 }
 
