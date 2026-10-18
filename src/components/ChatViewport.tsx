@@ -201,20 +201,15 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
         {/* Clean Tech Empty State (When no messages yet) */}
         {!hasMessages ? (
           <div className="tech-empty-state">
-            <div className="tech-hero-badge">
-              <span className="tech-glow-dot"></span>
-              <span className="tech-badge-text">AETHERIS TECH AI PLATFORM</span>
-            </div>
-
             <div className="tech-logo-halo">
               <img src="/aetheris-logo.png" alt="Aetheris AI" className="tech-main-logo" />
             </div>
 
             <h1 className="tech-hero-title">
-              ระบบแชท <span className="tech-gradient-text">Aetheris</span> สำหรับคุณ
+              มีอะไรให้ <span className="tech-gradient-text">Aetheris</span> ช่วยคุณวันนี้?
             </h1>
             <p className="tech-hero-subtitle">
-              ปัญญาประดิษฐ์สถาปัตยกรรมระดับสูง ประมวลผลรวดเร็ว แม่นยำ เขียนโค้ด และตอบตรงประเด็น
+              ผู้ช่วย AI อัจฉริยะ ตอบคำถาม เขียนโค้ด และวิเคราะห์ข้อมูลอย่างแม่นยำ ตรงไปตรงมา
             </p>
 
             <div className="tech-quick-grid">
@@ -222,52 +217,32 @@ export const ChatViewport: React.FC<ChatViewportProps> = ({
                 className="tech-card-action"
                 onClick={() => onSendSuggestion('เขียนโค้ด React TypeScript สำหรับเชื่อมต่อ API อย่างมีประสิทธิภาพ')}
               >
-                <div className="tech-card-icon">
-                  <span className="material-symbols-outlined">code_blocks</span>
-                </div>
-                <div className="tech-card-info">
-                  <div className="tech-card-head">เขียนโค้ด TypeScript</div>
-                  <div className="tech-card-sub">ตัวอย่างคลีนโค้ดและ Type-safe</div>
-                </div>
+                <span className="material-symbols-outlined tech-action-icon">code</span>
+                <span className="tech-action-text">เขียนโค้ด React TypeScript</span>
               </button>
 
               <button
                 className="tech-card-action"
                 onClick={() => onSendSuggestion('ช่วยออกแบบสถาปัตยกรรมระบบคลาวด์ Microservices')}
               >
-                <div className="tech-card-icon">
-                  <span className="material-symbols-outlined">dns</span>
-                </div>
-                <div className="tech-card-info">
-                  <div className="tech-card-head">ออกแบบสถาปัตยกรรมระบบ</div>
-                  <div className="tech-card-sub">High Performance & Scalable</div>
-                </div>
+                <span className="material-symbols-outlined tech-action-icon">hub</span>
+                <span className="tech-action-text">ออกแบบสถาปัตยกรรมระบบ</span>
               </button>
 
               <button
                 className="tech-card-action"
                 onClick={() => onSendSuggestion('วิเคราะห์แนวทางการ Optimize Database Query ให้เร็วขึ้น 10 เท่า')}
               >
-                <div className="tech-card-icon">
-                  <span className="material-symbols-outlined">speed</span>
-                </div>
-                <div className="tech-card-info">
-                  <div className="tech-card-head">Optimize Database</div>
-                  <div className="tech-card-sub">เพิ่มความเร็วและลด Latency</div>
-                </div>
+                <span className="material-symbols-outlined tech-action-icon">database</span>
+                <span className="tech-action-text">Optimize Database Query</span>
               </button>
 
               <button
                 className="tech-card-action"
                 onClick={() => onSendSuggestion('ตรวจสอบวันเวลาและสภาพอากาศปัจจุบัน')}
               >
-                <div className="tech-card-icon">
-                  <span className="material-symbols-outlined">schedule</span>
-                </div>
-                <div className="tech-card-info">
-                  <div className="tech-card-head">เช็ควันเวลาและสภาพอากาศ</div>
-                  <div className="tech-card-sub">ข้อมูลสดแบบเรียลไทม์</div>
-                </div>
+                <span className="material-symbols-outlined tech-action-icon">wb_sunny</span>
+                <span className="tech-action-text">ตรวจสอบวันเวลาและสภาพอากาศ</span>
               </button>
             </div>
           </div>
