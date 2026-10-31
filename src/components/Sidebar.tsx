@@ -26,126 +26,86 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeSessionId,
   onSelectSession,
   onNewChat,
+  searchQuery,
+  onSearchChange,
   currentUser,
   onOpenProfile,
   onOpenSettings
 }) => {
+  const q = searchQuery.trim().toLowerCase();
+  const visible = q ? sessions.filter(s => (s.title || '').toLowerCase().includes(q)) : sessions;
+  const initial = currentUser.isLoggedIn && currentUser.name ? currentUser.name.slice(0, 1).toUpperCase() : 'G';
+
   return (
     <>
-      <aside className={`tech-sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
-        {/* Top Header: Tech Brand + New Chat */}
-        <div className="tech-sidebar-top">
-          <div className="tech-sidebar-brand" onClick={() => { onNewChat(); onCloseMobile(); }}>
-            <div className="tech-logo-container">
-              <img src="/aetheris-logo.png" alt="Aetheris Logo" className="tech-logo-img" />
-            </div>
-            <div className="tech-brand-meta">
-              <span className="tech-brand-title">AETHERIS</span>
-              <span className="tech-brand-subtitle">NEURAL SYSTEM</span>
-            </div>
-          </div>
-
-          <div className="tech-sidebar-top-actions">
-            <button
-              className="tech-icon-action-btn"
-              onClick={() => { onNewChat(); onCloseMobile(); }}
-              title="สร้างบทสนทนาใหม่"
-            >
-              <span className="material-symbols-outlined">add</span>
+      <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
+        <div className="sidebar-inner">
+          <div className="sidebar-top">
+            <button type="button" className="brand" onClick={() => { onNewChat(); onCloseMobile(); }} title="Aetheris">
+              <img src="/aetheris-logo.png" alt="Aetheris" className="brand-logo" />
+              <span className="brand-name">Aetheris</span>
             </button>
-            <button
-              className="tech-icon-action-btn collapse-toggle-btn"
-              onClick={() => {
-                onToggleCollapse();
-                onCloseMobile();
-              }}
-              title="ซ่อนแถบเมนู"
-            >
-              <span className="material-symbols-outlined">first_page</span>
-            </button>
-          </div>
-        </div>
-
-        {/* New Chat Primary Button */}
-        <div className="tech-sidebar-action-wrap">
-          <button
-            type="button"
-            className="tech-btn-new-chat"
-            onClick={() => { onNewChat(); onCloseMobile(); }}
-          >
-            <span className="material-symbols-outlined">add_comment</span>
-            <span>บทสนทนาใหม่</span>
-            <span className="tech-kbd-badge">Ctrl+N</span>
-          </button>
-        </div>
-
-        {/* Chat List */}
-        <div className="tech-chat-list-container custom-scroll">
-          <div className="tech-section-header">
-            <span>HISTORY LOGS</span>
-            <span className="tech-history-count">{sessions.length}</span>
-          </div>
-
-          {sessions.length === 0 ? (
-            <div className="tech-empty-history">ไม่มีบันทึกการสนทนา</div>
-          ) : (
-            sessions.map((s) => {
-              const isActive = s.id === activeSessionId;
-              return (
-                <button
-                  key={s.id}
-                  className={`tech-chat-item ${isActive ? 'active' : ''}`}
-                  onClick={() => {
-                    onSelectSession(s.id);
-                    onCloseMobile();
-                  }}
-                  title={s.title}
-                >
-                  <span className="material-symbols-outlined tech-chat-icon">
-                    {isActive ? 'chat_bubble' : 'chat'}
-                  </span>
-                  <span className="tech-chat-title">{s.title || 'การสนทนาใหม่'}</span>
-                  {isActive && <span className="tech-active-indicator"></span>}
-                </button>
-              );
-            })
-          )}
-        </div>
-
-        {/* Bottom User / System Section */}
-        <div className="tech-sidebar-bottom">
-          <div className="tech-user-card" onClick={onOpenProfile}>
-            <div className="tech-user-avatar-badge">
-              {currentUser.isLoggedIn ? (currentUser.name ? currentUser.name.slice(0, 1).toUpperCase() : 'U') : 'A'}
-            </div>
-            <div className="tech-user-details">
-              <div className="tech-user-name-text">
-                {currentUser.isLoggedIn ? currentUser.name : 'ผู้ใช้งาน (Guest)'}
-              </div>
-              <div className="tech-user-tier-label">
-                <span className="tech-dot-tier"></span>
-                <span>{currentUser.tier === 'PRO' ? 'PRO ACCESS' : 'TECH FREE'}</span>
-              </div>
-            </div>
             <button
               type="button"
-              className="tech-settings-btn"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpenSettings();
-              }}
-              title="การตั้งค่า"
+              className="icon-btn"
+              title="ปิดแถบด้านข้าง (Ctrl+B)"
+              onClick={() => { if (mobileOpen) onCloseMobile(); else onToggleCollapse(); }}
             >
+              <span className="material-symbols-outlined">{mobileOpen ? 'close' : 'left_panel_close'}</span>
+            </button>
+          </div>
+
+          <button type="button" className="side-row new-chat" onClick={() => { onNewChat(); onCloseMobile(); }}>
+            <span className="material-symbols-outlined">edit_square</span>
+            <span>แชทใหม่</span>
+            <kbd>Ctrl N</kbd>
+          </button>
+
+          <label className="side-search">
+            <span className="material-symbols-outlined">search</span>
+            <input
+              type="text"
+              placeholder="ค้นหาแชท"
+              value={searchQuery}
+              onChange={e => onSearchChange(e.target.value)}
+            />
+          </label>
+
+          <div className="side-section-label">แชท</div>
+          <nav className="side-list">
+            {visible.length === 0 ? (
+              <div className="side-empty">{q ? 'ไม่พบแชทที่ค้นหา' : 'ยังไม่มีประวัติการสนทนา'}</div>
+            ) : (
+              visible.map(s => (
+                <button
+                  key={s.id}
+                  type="button"
+                  className={`side-item ${s.id === activeSessionId ? 'active' : ''}`}
+                  title={s.title}
+                  onClick={() => { onSelectSession(s.id); onCloseMobile(); }}
+                >
+                  {s.title || 'การสนทนาใหม่'}
+                </button>
+              ))
+            )}
+          </nav>
+
+          <div className="sidebar-bottom">
+            <button type="button" className="user-row" onClick={onOpenProfile}>
+              <span className="avatar">{initial}</span>
+              <span className="user-meta">
+                <span className="user-name">{currentUser.isLoggedIn ? currentUser.name : 'ผู้ใช้งาน (Guest)'}</span>
+                <span className="user-tier">{currentUser.tier === 'PRO' ? 'Pro' : 'Free'}</span>
+              </span>
+            </button>
+            <button type="button" className="icon-btn" title="การตั้งค่า" onClick={onOpenSettings}>
               <span className="material-symbols-outlined">settings</span>
             </button>
           </div>
         </div>
       </aside>
 
-      {/* Mobile Backdrop */}
-      {mobileOpen && (
-        <div className="tech-sidebar-backdrop" onClick={onCloseMobile} aria-hidden="true" />
-      )}
+      {mobileOpen && <div className="sidebar-backdrop" onClick={onCloseMobile} aria-hidden="true" />}
     </>
   );
 };

@@ -9,6 +9,7 @@ import { SettingsModal } from './components/SettingsModal';
 import { ToastContainer } from './components/ToastContainer';
 import { authService, chatService, sessionService } from './services/api';
 import { INITIAL_SESSIONS, INITIAL_USER } from './data/initialData';
+import { copyToClipboard } from './utils/clipboard';
 import type { ChatSession, Message, ModelId, ModelParameterState, ToastMessage, User } from './types';
 
 export function App() {
@@ -279,8 +280,9 @@ export function App() {
   };
 
   const handleCopyText = (text: string, label: string) => {
-    navigator.clipboard.writeText(text).then(() => {
-      showToast(label, 'success', 'content_copy');
+    copyToClipboard(text).then(ok => {
+      if (ok) showToast(label, 'success', 'check');
+      else showToast('คัดลอกไม่สำเร็จ', 'error', 'error');
     });
   };
 
@@ -294,8 +296,8 @@ export function App() {
   };
 
   return (
-    <div className="tech-app-container">
-      {/* 1. Tech Sidebar */}
+    <div className="app">
+      {/* 1. Sidebar */}
       <Sidebar
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -312,14 +314,15 @@ export function App() {
         onOpenSettings={() => setSettingsModalOpen(true)}
       />
 
-      {/* 2. Main Tech Workspace */}
-      <main className="tech-main-workspace">
+      {/* 2. Main Workspace */}
+      <main className="main">
         <TopNav
           currentModel={currentModel}
           onSelectModel={setCurrentModel}
           onOpenLogin={() => setLoginModalOpen(true)}
           currentUser={currentUser}
           sidebarCollapsed={sidebarCollapsed}
+          onNewChat={handleNewChat}
           onToggleSidebar={() => {
             if (window.innerWidth <= 768) {
               setMobileSidebarOpen(prev => !prev);
@@ -331,6 +334,7 @@ export function App() {
 
         {/* 3. Central Chat Viewport */}
         <ChatViewport
+          key={activeSession.id}
           session={activeSession}
           currentUser={currentUser}
           isStreaming={isStreaming}

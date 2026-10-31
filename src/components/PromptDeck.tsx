@@ -35,135 +35,91 @@ export const PromptDeck: React.FC<PromptDeckProps> = ({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-resize textarea to fit text naturally up to 200px
   useEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
-    }
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = 'auto';
+    ta.style.height = `${Math.min(ta.scrollHeight, 220)}px`;
   }, [promptText]);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      if (!isStreaming) {
-        onSend();
-      }
-    }
-  };
 
   const canSend = !isStreaming && (promptText.trim().length > 0 || attachedFiles.length > 0);
 
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
+      e.preventDefault();
+      if (canSend) onSend();
+    }
+  };
+
   return (
-    <footer className="tech-input-dock">
-      <div className="tech-input-wrapper">
-        {/* Attached Files Preview Bar */}
+    <footer className="composer-dock">
+      <div className="composer">
         {attachedFiles.length > 0 && (
-          <div className="tech-attachment-bar">
+          <div className="attachments">
             {attachedFiles.map((f, i) => (
-              <div key={i} className="tech-file-chip">
-                <span className="material-symbols-outlined text-tech-accent" style={{ fontSize: '14px' }}>
-                  description
-                </span>
-                <span className="tech-filename">{f.name}</span>
-                <button
-                  type="button"
-                  className="tech-remove-file-btn"
-                  onClick={() => onRemoveFile(i)}
-                  title="ลบไฟล์"
-                >
-                  <span className="material-symbols-outlined" style={{ fontSize: '14px' }}>
-                    close
-                  </span>
+              <div key={i} className="attachment">
+                <span className="material-symbols-outlined">description</span>
+                <span className="attachment-name">{f.name}</span>
+                <span className="attachment-size">{f.size}</span>
+                <button type="button" className="attachment-remove" onClick={() => onRemoveFile(i)} title="นำไฟล์ออก">
+                  <span className="material-symbols-outlined">close</span>
                 </button>
               </div>
             ))}
           </div>
         )}
 
-        {/* Floating Input Box (Dark Tech Console) */}
-        <div className="tech-console-box">
-          <textarea
-            ref={textareaRef}
-            className="tech-textarea custom-scroll"
-            placeholder="ส่งคำถาม เขียนโค้ด หรือให้วิเคราะห์ข้อมูลกับ Aetheris..."
-            rows={1}
-            value={promptText}
-            onChange={(e) => onPromptChange(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
+        <textarea
+          ref={textareaRef}
+          className="composer-input"
+          placeholder="ถามอะไรก็ได้กับ Aetheris"
+          rows={1}
+          value={promptText}
+          onChange={e => onPromptChange(e.target.value)}
+          onKeyDown={handleKeyDown}
+          autoFocus
+        />
 
-          {/* Bottom Toolbar inside console */}
-          <div className="tech-console-toolbar">
-            <div className="tech-toolbar-tools">
-              {/* Attach File */}
-              <button
-                type="button"
-                className="tech-tool-btn"
-                title="แนบไฟล์ข้อมูล (Code, Text, Config)"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <span className="material-symbols-outlined">attach_file</span>
-              </button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                className="hidden"
-                multiple
-                onChange={(e) => {
-                  if (e.target.files) {
-                    onAttachFiles(e.target.files);
-                  }
-                }}
-              />
-
-              {/* Web Search Toggle */}
-              <button
-                type="button"
-                className={`tech-toggle-pill ${webSearchActive ? 'active' : ''}`}
-                onClick={onToggleWebSearch}
-                title="ค้นหาข้อมูลออนไลน์สด"
-              >
-                <span className="material-symbols-outlined">travel_explore</span>
-                <span>ค้นหาเว็บ</span>
-              </button>
-
-              {/* Deep Reasoning Toggle */}
-              <button
-                type="button"
-                className={`tech-toggle-pill ${deepReasoningActive ? 'active' : ''}`}
-                onClick={onToggleDeepReasoning}
-                title="เปิดโหมดคิดวิเคราะห์ตรรกะเชิงลึก"
-              >
-                <span className="material-symbols-outlined">psychology</span>
-                <span>คิดเชิงลึก</span>
-              </button>
-            </div>
-
-            {/* Right: Send Action */}
-            <div className="tech-toolbar-action">
-              <button
-                type="button"
-                className={`tech-btn-send ${canSend ? 'active' : ''}`}
-                onClick={onSend}
-                disabled={!canSend}
-                title={isStreaming ? 'กำลังประมวลผลคำตอบ...' : 'ส่งคำถาม (Enter)'}
-                aria-label="Send message"
-              >
-                <span className={`material-symbols-outlined ${isStreaming ? 'spin-icon' : ''}`}>
-                  {isStreaming ? 'progress_activity' : 'arrow_upward'}
-                </span>
-              </button>
-            </div>
+        <div className="composer-bar">
+          <div className="composer-tools">
+            <button type="button" className="icon-btn" title="แนบไฟล์" onClick={() => fileInputRef.current?.click()}>
+              <span className="material-symbols-outlined">add</span>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              hidden
+              multiple
+              onChange={e => {
+                if (e.target.files) onAttachFiles(e.target.files);
+                e.target.value = '';
+              }}
+            />
+            <button type="button" className={`chip ${webSearchActive ? 'on' : ''}`} onClick={onToggleWebSearch} title="ค้นหาข้อมูลออนไลน์">
+              <span className="material-symbols-outlined">language</span>
+              <span>ค้นหาเว็บ</span>
+            </button>
+            <button type="button" className={`chip ${deepReasoningActive ? 'on' : ''}`} onClick={onToggleDeepReasoning} title="โหมดคิดวิเคราะห์เชิงลึก">
+              <span className="material-symbols-outlined">lightbulb</span>
+              <span>คิดเชิงลึก</span>
+            </button>
           </div>
-        </div>
 
-        {/* Tech System Tagline */}
-        <div className="tech-disclaimer-bar">
-          <span className="tech-mini-dot"></span>
-          <span>Aetheris Autonomous AI System • Ultra-fast, High-performance & Token-efficient</span>
+          <button
+            type="button"
+            className="send-btn"
+            onClick={onSend}
+            disabled={!canSend}
+            title={isStreaming ? 'กำลังตอบ...' : 'ส่ง (Enter)'}
+            aria-label="ส่งข้อความ"
+          >
+            <span className={`material-symbols-outlined ${isStreaming ? 'spin' : ''}`}>
+              {isStreaming ? 'progress_activity' : 'arrow_upward'}
+            </span>
+          </button>
         </div>
       </div>
+      <p className="composer-note">Aetheris อาจให้ข้อมูลผิดพลาดได้ โปรดตรวจสอบข้อมูลสำคัญ</p>
     </footer>
   );
 };
