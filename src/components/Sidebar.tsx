@@ -34,7 +34,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const q = searchQuery.trim().toLowerCase();
   const visible = q ? sessions.filter(s => (s.title || '').toLowerCase().includes(q)) : sessions;
-  const initial = currentUser.isLoggedIn && currentUser.name ? currentUser.name.slice(0, 1).toUpperCase() : 'G';
 
   return (
     <>
@@ -92,7 +91,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           <div className="sidebar-bottom">
             <button type="button" className="user-row" onClick={onOpenProfile}>
-              <span className="avatar">{initial}</span>
+              <span className="avatar"><img src="/aetheris-logo.png" alt="" /></span>
               <span className="user-meta">
                 <span className="user-name">{currentUser.isLoggedIn ? currentUser.name : 'ผู้ใช้งาน (Guest)'}</span>
                 <span className="user-tier">{currentUser.tier === 'PRO' ? 'Pro' : 'Free'}</span>

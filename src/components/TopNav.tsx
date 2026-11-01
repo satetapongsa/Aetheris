@@ -85,7 +85,7 @@ export const TopNav: React.FC<TopNavProps> = ({
           </>
         ) : (
           <button type="button" className="avatar avatar-btn" onClick={onOpenLogin} title={currentUser.name}>
-            {currentUser.name.slice(0, 1).toUpperCase()}
+            <img src="/aetheris-logo.png" alt="" />
           </button>
         )}
       </div>

@@ -169,8 +169,20 @@ a {
   font-weight: 600;
   flex-shrink: 0;
 }
+.avatar,
+.auth-user-avatar-large {
+  overflow: hidden;
+  border: 1px solid var(--border-strong);
+}
+.avatar img,
+.auth-user-avatar-large img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .avatar-btn:hover {
-  background: #333;
+  border-color: #555;
 }
 
 kbd {

@@ -64,7 +64,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
           <div className="auth-header text-center">
             <div className="auth-user-avatar-large">
-              {currentUser.name ? currentUser.name.slice(0, 1).toUpperCase() : 'U'}
+              <img src="/aetheris-logo.png" alt="" />
             </div>
             <h2 className="auth-title">{currentUser.name}</h2>
             <p className="auth-subtitle">{currentUser.email || 'บัญชีผู้ใช้งาน Aetheris'}</p>
