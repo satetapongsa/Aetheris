@@ -59,6 +59,22 @@ export function App() {
     }, 3500);
   };
 
+  const handleNewChat = () => {
+    const newId = 'sess-' + Date.now();
+    const newSession: ChatSession = {
+      id: newId,
+      title: 'การสนทนาใหม่',
+      topic: 'บทสนทนาใหม่กับ Aetheris',
+      category: 'today',
+      icon: 'chat_bubble',
+      messages: []
+    };
+
+    setSessions(prev => [newSession, ...prev]);
+    setActiveSessionId(newId);
+    setMobileSidebarOpen(false);
+  };
+
   // Load User and their private chat sessions from Neon Database
   const loadUserDataAndSessions = async () => {
     try {
@@ -135,22 +151,6 @@ export function App() {
     category: 'today',
     icon: 'chat_bubble',
     messages: []
-  };
-
-  const handleNewChat = () => {
-    const newId = 'sess-' + Date.now();
-    const newSession: ChatSession = {
-      id: newId,
-      title: 'การสนทนาใหม่',
-      topic: 'บทสนทนาใหม่กับ Aetheris',
-      category: 'today',
-      icon: 'chat_bubble',
-      messages: []
-    };
-
-    setSessions(prev => [newSession, ...prev]);
-    setActiveSessionId(newId);
-    setMobileSidebarOpen(false);
   };
 
   const handleSendMessage = (textToSend?: string) => {

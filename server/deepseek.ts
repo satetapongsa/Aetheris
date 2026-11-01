@@ -141,11 +141,12 @@ Real-Time Context:
 ${liveWeatherInfo ? `- ข้อมูลสภาพอากาศสด: ${liveWeatherInfo}` : ''}
 
 Strict Operational Directives:
-1. การตอบโค้ด (Code Blocks): เมื่อผู้ใช้ขอโค้ดหรือถามเกี่ยวกับโค้ด ให้เขียนโค้ดบรรจุใน Code Block (\`\`\`language ... \`\`\`) เสมอ ไม่ต้องเกริ่นยาว ไม่ต้องอธิบายยืดยาว ตอบโค้ดในบล็อกให้สมบูรณ์และใช้งานได้ทันที
-2. ความยาวคำตอบ: ห้ามตอบเกิน 300 คำโดยเด็ดขาด เพื่อความกระชับและประหยัดโทเคน (ไม่ต้องพูดถึงกฎนี้หรือจำนวนคำในคำตอบ)
-3. สาระและความฉลาด: ตอบเข้าประเด็นทันที มีเนื้อหาสาระ มีความฉลาดหลักแหลม มีเหตุผล ไม่พูดจาเวิ่นเว้อ ไม่ทักทายซ้ำซาก ไม่มีข้อความไร้สาระ
-4. ความแม่นยำ: ข้อมูลวันเวลา โค้ด สภาพอากาศ และความรู้เชิงเทคนิคต้องถูกต้อง คมชัด และนำไปใช้ได้จริงทันที
-5. ภาษา: ตอบภาษาไทยหรือภาษาอังกฤษตามที่ผู้ใช้ถามอย่างเป็นธรรมชาติและเป็นมืออาชีพ`;
+1. การตอบโค้ด (Code Blocks): เมื่อผู้ใช้ขอโค้ดหรือถามเกี่ยวกับโค้ด ให้เขียนโค้ดบรรจุใน Code Block พร้อมระบุภาษา (\`\`\`language ... \`\`\`) เสมอ เกริ่นสั้นๆ ไม่เกิน 1-2 ประโยค เขียนโค้ดให้ครบถ้วน สมบูรณ์ และรันได้ทันที ห้ามตัดโค้ดหรือเขียน "..." แทนส่วนที่ขาด แล้วอธิบายจุดสำคัญสั้นๆ ท้ายโค้ดถ้าจำเป็น
+2. ความยาวคำตอบ: คำถามทั่วไปตอบกระชับ ตรงประเด็น (ประมาณ 300 คำ) แต่ถ้าเป็นโค้ดหรืองานที่ต้องการรายละเอียด ให้ตอบยาวเท่าที่จำเป็นเพื่อให้ครบถ้วน (ไม่ต้องพูดถึงกฎนี้ในคำตอบ)
+3. รูปแบบ: ใช้ Markdown ให้อ่านง่าย เช่น หัวข้อ (##), รายการ (-, 1.), **ตัวหนา**, ตาราง และ \`inline code\` ตามความเหมาะสม
+4. สาระและความฉลาด: ตอบเข้าประเด็นทันที มีเนื้อหาสาระ มีความฉลาดหลักแหลม มีเหตุผล ไม่พูดจาเวิ่นเว้อ ไม่ทักทายซ้ำซาก ไม่มีข้อความไร้สาระ
+5. ความแม่นยำ: ข้อมูลวันเวลา โค้ด สภาพอากาศ และความรู้เชิงเทคนิคต้องถูกต้อง คมชัด และนำไปใช้ได้จริงทันที
+6. ภาษา: ตอบภาษาไทยหรือภาษาอังกฤษตามที่ผู้ใช้ถามอย่างเป็นธรรมชาติและเป็นมืออาชีพ`;
 
       const systemInstruction = options.systemPrompt || defaultSystemInstruction;
 
@@ -153,9 +154,9 @@ Strict Operational Directives:
         { role: 'system', content: systemInstruction }
       ];
 
-      // Add recent context history if available (limit to last 4 for token efficiency)
+      // Add recent context history if available (last 10 turns keeps follow-ups like "continue" working)
       if (options.history && options.history.length > 0) {
-        options.history.slice(-4).forEach(h => {
+        options.history.slice(-10).forEach(h => {
           if (h.content) {
             apiMessages.push({
               role: h.sender === 'user' ? 'user' : 'assistant',
@@ -169,8 +170,10 @@ Strict Operational Directives:
 
       console.log(`[DeepSeek Engine] Dispatching request with model: ${internalDeepSeekModel}`);
 
-      // Token efficiency: Limit max_tokens to 600 (~300 words) for token savings unless explicitly specified lower
-      const resolvedMaxTokens = Math.min(options.maxTokens ?? 600, 600);
+      // Enough room for complete code answers; brevity for simple questions is handled by the system prompt.
+      // The reasoner's chain-of-thought also counts toward max_tokens, so it gets a larger ceiling.
+      const tokenCeiling = options.thinkingMode ? 8192 : 4096;
+      const resolvedMaxTokens = Math.min(options.maxTokens ?? 2048, tokenCeiling);
 
       const response = await fetch(DEEPSEEK_API_ENDPOINT, {
         method: 'POST',
@@ -194,7 +197,12 @@ Strict Operational Directives:
 
       const data = await response.json();
       const choice = data.choices?.[0];
-      const replyContent = choice?.message?.content || '';
+      let replyContent: string = choice?.message?.content || '';
+      if (choice?.finish_reason === 'length') {
+        // Close a code fence left open by the cut-off so the note renders as text
+        if ((replyContent.match(/```/g) || []).length % 2 === 1) replyContent += '\n```';
+        replyContent += '\n\n*คำตอบยาวเกินขีดจำกัด พิมพ์ "ต่อ" เพื่อให้ตอบส่วนที่เหลือ*';
+      }
       const reasoningContent = choice?.message?.reasoning_content || '';
 
       const elapsedSeconds = ((Date.now() - startTime) / 1000).toFixed(1);

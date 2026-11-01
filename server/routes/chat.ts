@@ -66,12 +66,16 @@ router.post('/', async (req: Request, res: Response) => {
       content: prompt.trim()
     });
 
-    // Fetch previous messages for context history
-    const existingMessages = await dbMessages.listBySessionId(sessionId);
+    // Fetch previous messages for context history (drop the user message just saved; prompt is sent separately)
+    const existingMessages = (await dbMessages.listBySessionId(sessionId)).slice(0, -1);
 
     // Generate intelligent response via DeepSeek engine
     const aiResponse = await generateDeepSeekResponse(prompt, {
-      history: existingMessages.map(m => ({ sender: m.sender, content: m.content })),
+      history: existingMessages.map(m => ({
+        sender: m.sender,
+        // AI replies are stored as paragraphs only; rebuild their text so the model remembers its answers
+        content: m.content || (Array.isArray(m.paragraphs) ? m.paragraphs.join('\n\n') : undefined)
+      })),
       thinkingMode,
       temperature,
       maxTokens,
