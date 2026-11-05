@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 import Markdown from "./Markdown";
+import { useSmoothText } from "./useSmoothText";
 import {
   IconChart,
   IconCheck,
@@ -20,6 +21,8 @@ export interface UIMessage {
   content: string;
   pending?: boolean;
   error?: boolean;
+  /** Stable React key kept across server id syncs (keeps the reveal animation alive). */
+  key?: string;
   /** Labels of live-data tools the AI used for this answer. */
   tools?: string[];
 }
@@ -179,8 +182,14 @@ function ChatMessage({ message, isLast, busy, onRegenerate, onEdit }: Props) {
     );
   }
 
-  // Assistant
+  return <AssistantMessage message={message} isLast={isLast} busy={busy} onRegenerate={onRegenerate} />;
+}
+
+function AssistantMessage({ message, isLast, busy, onRegenerate }: Omit<Props, "onEdit">) {
+  const { copied, copy } = useCopy();
+  const smooth = useSmoothText(message.content, Boolean(message.pending) && !message.error);
   const thinking = message.pending && !message.content;
+  const revealing = smooth.animating && !message.error;
   return (
     <div className="group flex animate-fade-in gap-4">
       <div className="mt-0.5 hidden size-8 shrink-0 overflow-hidden rounded-full ring-1 ring-line sm:block">
@@ -199,10 +208,10 @@ function ChatMessage({ message, isLast, busy, onRegenerate, onEdit }: Props) {
             {message.content}
           </div>
         ) : (
-          <Markdown content={message.content + (message.pending ? " ▍" : "")} />
+          <Markdown content={revealing ? smooth.text : message.content} streaming={revealing} />
         )}
 
-        {!message.pending && !message.error && (
+        {!revealing && !message.error && (
           <div
             className={`mt-2 -ml-1.5 flex gap-0.5 transition ${isLast ? "opacity-100" : "opacity-0 group-hover:opacity-100 max-md:opacity-100"}`}
           >

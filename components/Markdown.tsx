@@ -40,21 +40,59 @@ function CodeBlock(props: ComponentProps<"pre">) {
   );
 }
 
-function Markdown({ content }: { content: string }) {
+// ── Streaming fade-in: wrap each word in a span that fades in on mount ─────
+type HastNode = { type: string; value?: string; tagName?: string; children?: HastNode[]; properties?: object };
+
+const segmenter =
+  typeof Intl !== "undefined" && "Segmenter" in Intl ? new Intl.Segmenter(undefined, { granularity: "word" }) : null;
+
+function splitWords(text: string): string[] {
+  if (segmenter) return Array.from(segmenter.segment(text), (s) => s.segment);
+  return text.split(/(\s+)/).filter(Boolean);
+}
+
+function rehypeFadeWords() {
+  const walk = (node: HastNode) => {
+    if (!node.children || node.tagName === "pre" || node.tagName === "code") return;
+    node.children = node.children.flatMap((child): HastNode[] => {
+      if (child.type === "text" && child.value && child.value.trim()) {
+        return splitWords(child.value).map((w) =>
+          /^\s+$/.test(w)
+            ? { type: "text", value: w }
+            : { type: "element", tagName: "span", properties: { className: ["fade-word"] }, children: [{ type: "text", value: w }] },
+        );
+      }
+      walk(child);
+      return [child];
+    });
+  };
+  return (tree: HastNode) => walk(tree);
+}
+
+const COMPONENTS = {
+  pre: CodeBlock,
+  a: ({ node: _n, ...p }: ComponentProps<"a"> & { node?: unknown }) => (
+    <a {...p} target="_blank" rel="noopener noreferrer" />
+  ),
+  table: ({ node: _n, ...p }: ComponentProps<"table"> & { node?: unknown }) => (
+    <div className="table-wrap">
+      <table {...p} />
+    </div>
+  ),
+};
+
+const REMARK = [remarkGfm];
+const REHYPE_STATIC = [[rehypeHighlight, { detect: true }]] as const;
+const REHYPE_STREAMING = [[rehypeHighlight, { detect: true }], rehypeFadeWords] as const;
+
+function Markdown({ content, streaming = false }: { content: string; streaming?: boolean }) {
   return (
     <div className="md">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[[rehypeHighlight, { detect: true }]]}
-        components={{
-          pre: CodeBlock,
-          a: ({ node: _n, ...p }) => <a {...p} target="_blank" rel="noopener noreferrer" />,
-          table: ({ node: _n, ...p }) => (
-            <div className="table-wrap">
-              <table {...p} />
-            </div>
-          ),
-        }}
+        remarkPlugins={REMARK}
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        rehypePlugins={(streaming ? REHYPE_STREAMING : REHYPE_STATIC) as any}
+        components={COMPONENTS}
       >
         {stripEmoji(content)}
       </ReactMarkdown>

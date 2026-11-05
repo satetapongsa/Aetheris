@@ -282,6 +282,7 @@ export default function ChatApp({ initialId }: { initialId: string | null }) {
                       role: m.role as UIMessage["role"],
                       content: m.content,
                       tools: prev[i]?.tools,
+                      key: prev[i]?.key ?? prev[i]?.id,
                     }));
                   });
                 })
@@ -487,7 +488,7 @@ export default function ChatApp({ initialId }: { initialId: string | null }) {
                 ) : (
                   messages.map((m, i) => (
                     <ChatMessage
-                      key={m.id}
+                      key={m.key ?? m.id}
                       message={m}
                       isLast={i === lastAssistantIdx && i === messages.length - 1}
                       busy={busy}

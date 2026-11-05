@@ -74,6 +74,13 @@ body {
   30% { opacity: 1; transform: translateY(-3px); }
 }
 
+/* Streaming text: each new word fades in softly */
+.fade-word { animation: word-in 0.55s cubic-bezier(0.2, 0.6, 0.3, 1) both; }
+@keyframes word-in {
+  from { opacity: 0; filter: blur(3px); }
+  to { opacity: 1; filter: blur(0); }
+}
+@media (prefers-reduced-motion: reduce) { .fade-word { animation: none; } }
 /* ── Markdown ─────────────────────────────────────────────────────────── */
 .md { font-size: 15.5px; line-height: 1.75; overflow-wrap: anywhere; }
 .md > *:first-child { margin-top: 0; }
