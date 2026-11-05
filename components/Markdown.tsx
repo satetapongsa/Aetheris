@@ -5,6 +5,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { IconCheck, IconCopy } from "./icons";
+import { stripEmoji } from "@/lib/text";
 
 function CodeBlock(props: ComponentProps<"pre">) {
   const ref = useRef<HTMLPreElement>(null);
@@ -55,7 +56,7 @@ function Markdown({ content }: { content: string }) {
           ),
         }}
       >
-        {content}
+        {stripEmoji(content)}
       </ReactMarkdown>
     </div>
   );

@@ -1,4 +1,5 @@
 import "server-only";
+import { stripEmoji } from "./text";
 import { TOOLS, describeNow, runTool, toolLabel } from "./tools";
 
 export type ToolCall = { id: string; type: "function"; function: { name: string; arguments: string } };
@@ -12,7 +13,7 @@ export type AgentEvent = { type: "text"; value: string } | { type: "tool"; name:
 
 const BASE_URL = (process.env.DEEPSEEK_BASE_URL || "https://api.deepseek.com").replace(/\/+$/, "");
 const MODEL = process.env.DEEPSEEK_MODEL || "deepseek-chat";
-const MAX_TOOL_ROUNDS = 6;
+const MAX_TOOL_ROUNDS = 4;
 
 export const isAIConfigured = () => Boolean(process.env.DEEPSEEK_API_KEY);
 
@@ -27,10 +28,12 @@ Current date and time (user's time zone ${now.timezone}): ${now.local} — ${now
 - Prices of stocks, indices, ETFs, crypto, currencies, gold, oil — anywhere in the world → get_market_quotes (search_ticker first if unsure of the symbol). Never quote a price from memory; always fetch it and state the time of the quote.
 - Weather → get_weather.
 - News, recent events, anything that may have changed after your training data, or facts you are unsure of → web_search, then read_webpage on the best sources when you need details. Cite sources as Markdown links.
-- You may call several tools in one turn and chain them. If a tool fails, try another approach before giving up.
+- Call all the tools you need in parallel in a single turn (e.g. several symbols in one get_market_quotes call) instead of one after another. Use as few tool rounds as possible. If a tool fails, try one alternative, then answer with what you have.
 
 ## Answer style
 - Always reply in the user's language (Thai → Thai, English → English).
+- NEVER use emoji, emoticons or decorative icons/symbols (no ✅ 📈 🚀 💡 👉 etc.) anywhere in the answer. Plain text and Markdown only.
+- Get straight to the answer: no greetings, filler, or repeating the question.
 - Format with Markdown so answers are easy to scan: short headings (##), bullet points, **bold** key facts, and tables whenever comparing items or listing numbers (e.g. several stock prices → a table with symbol, price, change, %).
 - Put all code in fenced code blocks with a language tag (python, ts, bash, …).
 - Simple questions get short answers; complex ones get thorough, structured answers.
@@ -148,7 +151,8 @@ export async function* runAgent(
     const gen = streamRound(convo, opts.signal, round < MAX_TOOL_ROUNDS);
     let step = await gen.next();
     while (!step.done) {
-      yield { type: "text", value: step.value };
+      const clean = stripEmoji(step.value);
+      if (clean) yield { type: "text", value: clean };
       step = await gen.next();
     }
     const { text, reasoning, toolCalls } = step.value;

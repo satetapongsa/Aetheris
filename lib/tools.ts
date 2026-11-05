@@ -8,7 +8,7 @@ import "server-only";
  */
 
 const UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130 Safari/537.36";
-const TIMEOUT = 12_000;
+const TIMEOUT = 8_000;
 
 export type ToolDef = {
   type: "function";
