@@ -1,41 +1,30 @@
 {
   "name": "aetheris",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "concurrently -k -p \"[{name}]\" -n \"CLIENT,SERVER\" -c \"cyan.bold,magenta.bold\" \"vite\" \"tsx watch server/index.ts\"",
-    "dev:client": "vite",
-    "dev:server": "tsx watch server/index.ts",
-    "build": "tsc -b && vite build && npm run build:server",
-    "build:server": "esbuild server/index.ts --bundle --platform=node --format=esm --target=node18 --outfile=api/index.js --packages=external",
-    "lint": "oxlint",
-    "preview": "vite preview"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "db:init": "node scripts/db-init.mjs"
   },
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
-    "bcryptjs": "^3.0.3",
-    "cors": "^2.8.6",
-    "dotenv": "^18.0.8",
-    "express": "^5.3.0",
-    "jsonwebtoken": "^9.0.3",
-    "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "highlight.js": "^11.12.0",
+    "next": "^16.4.5",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "react-markdown": "^10.1.0",
+    "rehype-highlight": "^7.0.2",
+    "remark-gfm": "^4.0.1",
+    "server-only": "^0.0.1"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^24.13.3",
-    "@types/react": "^19.2.18",
-    "@types/react-dom": "^19.2.7",
-    "@vitejs/plugin-react": "^6.1.1",
-    "concurrently": "^10.0.6",
-    "esbuild": "^0.28.2",
-    "oxlint": "^1.81.0",
-    "tsx": "^4.23.15",
-    "typescript": "~6.0.2",
-    "vite": "^8.3.0"
+    "@tailwindcss/postcss": "^4.3.4",
+    "@types/node": "^26.6.6",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tailwindcss": "^4.3.4",
+    "typescript": "^5.9.3"
   }
 }
