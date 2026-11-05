@@ -75,35 +75,65 @@ body {
 }
 
 /* ── Markdown ─────────────────────────────────────────────────────────── */
-.md { font-size: 15.5px; line-height: 1.75; word-wrap: break-word; }
+.md { font-size: 15.5px; line-height: 1.75; overflow-wrap: anywhere; }
 .md > *:first-child { margin-top: 0; }
 .md > *:last-child { margin-bottom: 0; }
-.md p { margin: 0.7em 0; }
-.md h1, .md h2, .md h3, .md h4 { font-weight: 650; line-height: 1.35; margin: 1.4em 0 0.6em; color: #fff; }
+.md p { margin: 0.75em 0; }
+.md h1, .md h2, .md h3, .md h4 { font-weight: 650; line-height: 1.35; margin: 1.5em 0 0.6em; color: #fff; letter-spacing: -0.01em; }
 .md h1 { font-size: 1.5em; }
-.md h2 { font-size: 1.28em; }
+.md h2 { font-size: 1.25em; padding-bottom: 0.35em; border-bottom: 1px solid var(--color-line); }
 .md h3 { font-size: 1.1em; }
-.md ul, .md ol { margin: 0.6em 0; padding-left: 1.5em; }
+.md h4 { font-size: 1em; color: var(--color-fg); }
+.md ul, .md ol { margin: 0.6em 0; padding-left: 1.4em; }
 .md ul { list-style: disc; }
+.md ul ul { list-style: circle; }
 .md ol { list-style: decimal; }
-.md li { margin: 0.3em 0; }
+.md li { margin: 0.35em 0; padding-left: 0.2em; }
+.md li > ul, .md li > ol { margin: 0.25em 0; }
+.md li > p { margin: 0.25em 0; }
 .md li::marker { color: var(--color-subtle); }
+.md ol > li::marker { font-variant-numeric: tabular-nums; font-weight: 600; }
 .md strong { font-weight: 650; color: #fff; }
 .md a { color: #a5b4fc; text-decoration: underline; text-underline-offset: 3px; text-decoration-color: rgb(165 180 252 / 0.4); }
 .md a:hover { text-decoration-color: currentColor; }
-.md blockquote { border-left: 3px solid var(--color-line-strong); padding-left: 1em; color: var(--color-muted); margin: 1em 0; }
+.md blockquote {
+  border-left: 3px solid var(--color-accent); background: rgb(139 123 255 / 0.06);
+  padding: 0.6em 1em; border-radius: 0 10px 10px 0; color: var(--color-muted); margin: 1em 0;
+}
+.md blockquote > p { margin: 0.3em 0; }
 .md hr { border: 0; border-top: 1px solid var(--color-line); margin: 1.6em 0; }
 .md :not(pre) > code {
   font-family: var(--font-mono); font-size: 0.86em; background: rgb(255 255 255 / 0.08);
-  padding: 0.15em 0.4em; border-radius: 6px; color: #f4f4f5;
+  padding: 0.15em 0.4em; border-radius: 6px; color: #f4f4f5; overflow-wrap: anywhere;
 }
 .md pre code { font-family: var(--font-mono); font-size: 13.5px; line-height: 1.65; }
-.md .table-wrap { overflow-x: auto; margin: 1em 0; border: 1px solid var(--color-line); border-radius: 12px; }
-.md table { border-collapse: collapse; width: 100%; font-size: 14px; }
-.md th, .md td { padding: 0.6em 0.9em; border-bottom: 1px solid var(--color-line); text-align: left; }
-.md th { background: rgb(255 255 255 / 0.03); font-weight: 600; }
+
+/* Tables */
+.md .table-wrap {
+  overflow-x: auto; margin: 1.1em 0; border: 1px solid var(--color-line-strong); border-radius: 12px;
+  background: rgb(255 255 255 / 0.015);
+}
+.md table { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 1.55; }
+.md thead th {
+  background: rgb(255 255 255 / 0.05); font-weight: 600; color: #fff; white-space: nowrap;
+  font-size: 12.5px; letter-spacing: 0.02em;
+}
+.md th, .md td { padding: 0.6em 0.95em; border-bottom: 1px solid var(--color-line); text-align: left; vertical-align: top; }
+.md td { overflow-wrap: normal; min-width: 4.5em; }
+.md th + th, .md td + td { border-left: 1px solid var(--color-line); }
+.md tbody tr:nth-child(even) td { background: rgb(255 255 255 / 0.018); }
+.md tbody tr:hover td { background: rgb(255 255 255 / 0.04); }
 .md tr:last-child td { border-bottom: 0; }
+.md th[align="right"], .md td[align="right"] { text-align: right; font-variant-numeric: tabular-nums; }
+.md th[align="center"], .md td[align="center"] { text-align: center; }
 .md input[type="checkbox"] { margin-right: 0.4em; accent-color: var(--color-accent); }
+
+@media (max-width: 640px) {
+  .md { font-size: 15px; line-height: 1.7; }
+  .md table { font-size: 13px; }
+  .md th, .md td { padding: 0.5em 0.7em; }
+  .md pre code { font-size: 12.5px; }
+}
 
 /* ── Syntax highlighting (custom dark theme) ──────────────────────────── */
 .hljs { color: #e4e4e7; background: transparent; }

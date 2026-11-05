@@ -121,3 +121,20 @@ export const IconAlert = (p: P) => (
     <path d="M12 9v4M12 17h.01" />
   </svg>
 );
+export const IconChart = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M3 3v18h18" />
+    <path d="m7 14 4-4 3 3 6-6" />
+  </svg>
+);
+export const IconClock = (p: P) => (
+  <svg {...base(p)}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7v5l3 2" />
+  </svg>
+);
+export const IconCloud = (p: P) => (
+  <svg {...base(p)}>
+    <path d="M7 18a4.5 4.5 0 1 1 .9-8.9A6 6 0 0 1 19 11a3.5 3.5 0 0 1-.5 7Z" />
+  </svg>
+);

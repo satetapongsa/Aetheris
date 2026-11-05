@@ -27,6 +27,7 @@ export default function ChatApp({ initialId }: { initialId: string | null }) {
   const [toast, setToast] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<Conversation | null>(null);
   const [atBottom, setAtBottom] = useState(true);
+  const [queue, setQueue] = useState<{ id: string; text: string }[]>([]);
 
   const activeRef = useRef(activeId);
   activeRef.current = activeId;
@@ -98,6 +99,7 @@ export default function ChatApp({ initialId }: { initialId: string | null }) {
   useEffect(() => {
     const onPop = () => {
       abortRef.current?.abort();
+      setQueue([]);
       const id = idFromPath();
       setActiveId(id);
       setMessages([]);
@@ -110,6 +112,7 @@ export default function ChatApp({ initialId }: { initialId: string | null }) {
   // ── Navigation ───────────────────────────────────────────────────────────
   const newChat = useCallback(() => {
     abortRef.current?.abort();
+    setQueue([]);
     setActiveId(null);
     setMessages([]);
     setConvLoading(false);
@@ -123,6 +126,7 @@ export default function ChatApp({ initialId }: { initialId: string | null }) {
       setMobileOpen(false);
       if (id === activeRef.current) return;
       abortRef.current?.abort();
+      setQueue([]);
       setActiveId(id);
       setMessages([]);
       window.history.pushState(null, "", pathFor(id));
@@ -180,6 +184,7 @@ export default function ChatApp({ initialId }: { initialId: string | null }) {
             content: text,
             regenerate: opts.regenerate,
             editMessageId: opts.editMessageId,
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
           }),
           signal: controller.signal,
         });
@@ -212,16 +217,36 @@ export default function ChatApp({ initialId }: { initialId: string | null }) {
         const reader = res.body!.getReader();
         const decoder = new TextDecoder();
         let acc = "";
+        let buf = "";
+        let streamError = "";
+        const tools: string[] = [];
+        const handle = (line: string) => {
+          if (!line.trim()) return;
+          try {
+            const ev = JSON.parse(line) as { t: string; v: string };
+            if (ev.t === "text") acc += ev.v;
+            else if (ev.t === "tool") tools.push(ev.v);
+            else if (ev.t === "error") streamError = ev.v;
+          } catch {}
+        };
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
-          acc += decoder.decode(value, { stream: true });
-          if (activeRef.current === convId) patchAssistant({ content: acc });
+          buf += decoder.decode(value, { stream: true });
+          const lines = buf.split("\n");
+          buf = lines.pop() ?? "";
+          lines.forEach(handle);
+          if (activeRef.current === convId) patchAssistant({ content: acc, tools: [...tools] });
         }
+        handle(buf);
         if (activeRef.current === convId) {
           patchAssistant({
             pending: false,
-            ...(acc.trim() ? {} : { error: true, content: "ไม่ได้รับคำตอบจาก AI กรุณาลองใหม่" }),
+            content: acc,
+            tools: [...tools],
+            ...(acc.trim()
+              ? {}
+              : { error: true, content: streamError || "ไม่ได้รับคำตอบจาก AI กรุณาลองใหม่" }),
           });
         }
       } catch (err) {
@@ -249,10 +274,15 @@ export default function ChatApp({ initialId }: { initialId: string | null }) {
                 .then((j: { conversation: ConversationWithMessages } | null) => {
                   if (!j || activeRef.current !== convId || abortRef.current) return;
                   setMessages((prev) => {
-                    if (prev.some((m) => m.error)) return prev; // keep visible error state
-                    return j.conversation.messages
-                      .filter((m) => m.role !== "system")
-                      .map((m) => ({ id: m.id, role: m.role as UIMessage["role"], content: m.content }));
+                    if (prev.some((m) => m.error || m.pending)) return prev; // keep visible error / new turn
+                    const server = j.conversation.messages.filter((m) => m.role !== "system");
+                    if (server.length !== prev.length) return prev;
+                    return server.map((m, i) => ({
+                      id: m.id,
+                      role: m.role as UIMessage["role"],
+                      content: m.content,
+                      tools: prev[i]?.tools,
+                    }));
                   });
                 })
                 .catch(() => {});
@@ -266,6 +296,31 @@ export default function ChatApp({ initialId }: { initialId: string | null }) {
   );
 
   const stop = useCallback(() => abortRef.current?.abort(), []);
+
+  // ── Message queue: typing while the AI answers queues the message ─────────
+  const submit = useCallback(
+    (text: string) => {
+      if (busy) setQueue((q) => [...q, { id: localId(), text }]);
+      else send(text);
+    },
+    [busy, send],
+  );
+
+  useEffect(() => {
+    if (busy || queue.length === 0) return;
+    const [next, ...rest] = queue;
+    setQueue(rest);
+    send(next.text);
+  }, [busy, queue, send]);
+
+  const unqueue = useCallback((id: string) => setQueue((q) => q.filter((x) => x.id !== id)), []);
+  const editQueued = useCallback((id: string) => {
+    setQueue((q) => {
+      const item = q.find((x) => x.id === id);
+      if (item) composerRef.current?.setText(item.text);
+      return q.filter((x) => x.id !== id);
+    });
+  }, []);
   const regenerate = useCallback(() => send("", { regenerate: true }), [send]);
   const editMessage = useCallback((id: string, text: string) => send(text, { editMessageId: id }), [send]);
 
@@ -401,9 +456,17 @@ export default function ChatApp({ initialId }: { initialId: string | null }) {
         {empty ? (
           <div className="flex flex-1 flex-col items-center justify-center overflow-y-auto px-4 pb-[8vh]">
             <div className="w-full max-w-3xl">
-              <Welcome onPick={(t) => send(t)} />
+              <Welcome onPick={(t) => submit(t)} />
               <div className="mt-8">
-                <Composer ref={composerRef} busy={busy} onSend={(t) => send(t)} onStop={stop} />
+                <Composer
+                  ref={composerRef}
+                  busy={busy}
+                  queue={queue}
+                  onSend={submit}
+                  onStop={stop}
+                  onUnqueue={unqueue}
+                  onEditQueued={editQueued}
+                />
               </div>
             </div>
           </div>
@@ -448,7 +511,15 @@ export default function ChatApp({ initialId }: { initialId: string | null }) {
                 </button>
               )}
               <div className="mx-auto w-full max-w-3xl">
-                <Composer ref={composerRef} busy={busy} onSend={(t) => send(t)} onStop={stop} />
+                <Composer
+                  ref={composerRef}
+                  busy={busy}
+                  queue={queue}
+                  onSend={submit}
+                  onStop={stop}
+                  onUnqueue={unqueue}
+                  onEditQueued={editQueued}
+                />
                 <p className="mt-2 text-center text-[11.5px] text-subtle">
                   Aetheris อาจให้ข้อมูลที่ไม่ถูกต้องได้ โปรดตรวจสอบข้อมูลสำคัญอีกครั้ง
                 </p>

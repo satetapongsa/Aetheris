@@ -2,7 +2,17 @@
 
 import { memo, useEffect, useRef, useState } from "react";
 import Markdown from "./Markdown";
-import { IconCheck, IconCopy, IconPencil, IconRefresh } from "./icons";
+import {
+  IconChart,
+  IconCheck,
+  IconClock,
+  IconCloud,
+  IconCopy,
+  IconGlobe,
+  IconPencil,
+  IconRefresh,
+  IconSearch,
+} from "./icons";
 
 export interface UIMessage {
   id: string;
@@ -10,6 +20,39 @@ export interface UIMessage {
   content: string;
   pending?: boolean;
   error?: boolean;
+  /** Labels of live-data tools the AI used for this answer. */
+  tools?: string[];
+}
+
+function toolIcon(label: string) {
+  if (label.startsWith("ดึงราคา") || label.startsWith("ค้นหาสัญลักษณ์")) return IconChart;
+  if (label.startsWith("ตรวจสอบวัน")) return IconClock;
+  if (label.startsWith("ดูสภาพอากาศ")) return IconCloud;
+  if (label.startsWith("ค้นเว็บ")) return IconSearch;
+  return IconGlobe;
+}
+
+function ToolSteps({ tools, running }: { tools: string[]; running: boolean }) {
+  return (
+    <div className="mb-3 flex flex-wrap gap-1.5">
+      {tools.map((label, i) => {
+        const Icon = toolIcon(label);
+        const active = running && i >= tools.length - 1;
+        return (
+          <span
+            key={i}
+            className={`inline-flex max-w-full animate-fade-in items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs ${
+              active ? "border-accent/30 bg-accent/10 text-fg" : "border-line bg-white/[0.03] text-subtle"
+            }`}
+          >
+            <Icon size={13} className={active ? "animate-pulse text-accent" : ""} />
+            <span className="truncate">{label}</span>
+            {!active && <IconCheck size={12} className="text-emerald-400/80" />}
+          </span>
+        );
+      })}
+    </div>
+  );
 }
 
 type Props = {
@@ -111,7 +154,7 @@ function ChatMessage({ message, isLast, busy, onRegenerate, onEdit }: Props) {
           </div>
         ) : (
           <>
-            <div className="max-w-[85%] whitespace-pre-wrap break-words rounded-3xl rounded-br-lg bg-elevated px-5 py-2.5 text-[15.5px] leading-relaxed text-fg">
+            <div className="max-w-[88%] whitespace-pre-wrap sm:max-w-[80%] break-words rounded-3xl rounded-br-lg bg-elevated px-5 py-2.5 text-[15.5px] leading-relaxed text-fg">
               {message.content}
             </div>
             <div className="mt-1 flex gap-0.5 opacity-0 transition group-hover:opacity-100 max-md:opacity-100">
@@ -144,6 +187,9 @@ function ChatMessage({ message, isLast, busy, onRegenerate, onEdit }: Props) {
         <img src="/aetheris-logo.png" alt="" className="size-full scale-110 object-cover" />
       </div>
       <div className="min-w-0 flex-1">
+        {message.tools && message.tools.length > 0 && (
+          <ToolSteps tools={message.tools} running={Boolean(thinking)} />
+        )}
         {thinking ? (
           <div className="typing flex h-7 items-center gap-1.5 text-muted">
             <span /> <span /> <span />

@@ -7,11 +7,19 @@ import {
   renameConversation,
   truncateFrom,
 } from "@/lib/store";
-import { DeepSeekError, SYSTEM_PROMPT, generateTitle, isAIConfigured, streamChat, type ChatMessage } from "@/lib/deepseek";
+import {
+  DeepSeekError,
+  generateTitle,
+  isAIConfigured,
+  runAgent,
+  systemPrompt,
+  type AgentEvent,
+  type ChatMessage,
+} from "@/lib/deepseek";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 const MAX_INPUT = 32_000;
 const MAX_CONTEXT_CHARS = 120_000;
@@ -23,6 +31,7 @@ type Body = {
   content?: string;
   regenerate?: boolean;
   editMessageId?: string;
+  timezone?: string;
 };
 
 export async function POST(req: NextRequest) {
@@ -69,7 +78,8 @@ export async function POST(req: NextRequest) {
   }
 
   const conv = (await getConversation(conversationId))!;
-  const history = buildContext(conv.messages);
+  const timezone = typeof body.timezone === "string" ? body.timezone.slice(0, 64) : undefined;
+  const history = buildContext(conv.messages, timezone);
   const firstUser = conv.messages.find((m) => m.role === "user")?.content ?? content;
   const needsTitle =
     isNew || (Boolean(body.editMessageId) && conv.messages.filter((m) => m.role === "user").length === 1);
@@ -81,10 +91,10 @@ export async function POST(req: NextRequest) {
   const upstream = new AbortController();
   req.signal.addEventListener("abort", () => upstream.abort());
 
-  let iterator: AsyncGenerator<string>;
-  let first: IteratorResult<string>;
+  let iterator: AsyncGenerator<AgentEvent>;
+  let first: IteratorResult<AgentEvent>;
   try {
-    iterator = streamChat(history, upstream.signal);
+    iterator = runAgent(history, { signal: upstream.signal, timezone });
     first = await iterator.next(); // surface auth/quota errors as a proper HTTP error
   } catch (err) {
     const status = err instanceof DeepSeekError ? err.status : 502;
@@ -96,25 +106,31 @@ export async function POST(req: NextRequest) {
   const encoder = new TextEncoder();
   const cid = conversationId;
 
+  // NDJSON: {"t":"text","v":"..."} | {"t":"tool","v":"label"} | {"t":"error","v":"..."}
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
       let answer = "";
+      const emit = (ev: AgentEvent) => {
+        if (ev.type === "text") answer += ev.value;
+        const line = ev.type === "text" ? { t: "text", v: ev.value } : { t: "tool", v: ev.label };
+        controller.enqueue(encoder.encode(JSON.stringify(line) + "\n"));
+      };
       try {
-        if (!first.done && first.value) {
-          answer += first.value;
-          controller.enqueue(encoder.encode(first.value));
-        }
         if (!first.done) {
-          for await (const chunk of iterator) {
-            answer += chunk;
-            controller.enqueue(encoder.encode(chunk));
-          }
+          emit(first.value);
+          for await (const ev of iterator) emit(ev);
         }
       } catch (err) {
-        if (!upstream.signal.aborted) console.error("[chat] stream interrupted", err);
+        if (!upstream.signal.aborted) {
+          console.error("[chat] stream interrupted", err);
+          try {
+            const msg = err instanceof Error ? err.message : "stream error";
+            controller.enqueue(encoder.encode(JSON.stringify({ t: "error", v: msg }) + "\n"));
+          } catch {}
+        }
       } finally {
         try {
-          if (answer.trim()) await addMessage(cid, "assistant", answer);
+          if (answer.trim()) await addMessage(cid, "assistant", answer.trim());
           const title = await titlePromise;
           if (title) await renameConversation(cid, title);
         } catch (err) {
@@ -132,7 +148,7 @@ export async function POST(req: NextRequest) {
 
   return new Response(stream, {
     headers: {
-      "Content-Type": "text/plain; charset=utf-8",
+      "Content-Type": "application/x-ndjson; charset=utf-8",
       "Cache-Control": "no-cache, no-transform",
       "X-Accel-Buffering": "no",
       "X-Conversation-Id": cid,
@@ -141,7 +157,7 @@ export async function POST(req: NextRequest) {
 }
 
 /** System prompt + as much recent history as fits in the context budget. */
-function buildContext(messages: { role: string; content: string }[]): ChatMessage[] {
+function buildContext(messages: { role: string; content: string }[], timezone?: string): ChatMessage[] {
   const out: ChatMessage[] = [];
   let budget = MAX_CONTEXT_CHARS;
   for (let i = messages.length - 1; i >= 0; i--) {
@@ -151,5 +167,5 @@ function buildContext(messages: { role: string; content: string }[]): ChatMessag
     if (budget < 0 && out.length > 0) break;
     out.unshift({ role: m.role, content: m.content });
   }
-  return [{ role: "system", content: SYSTEM_PROMPT }, ...out];
+  return [{ role: "system", content: systemPrompt(timezone) }, ...out];
 }
