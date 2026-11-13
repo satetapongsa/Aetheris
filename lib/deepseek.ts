@@ -17,27 +17,42 @@ const MAX_TOOL_ROUNDS = 4;
 
 export const isAIConfigured = () => Boolean(process.env.DEEPSEEK_API_KEY);
 
-export function systemPrompt(timezone?: string) {
-  const now = describeNow(timezone || "Asia/Bangkok");
-  return `You are Aetheris, a highly capable, knowledgeable and friendly AI assistant with live access to the internet through tools.
+/**
+ * Static instructions. Kept byte-identical between requests so DeepSeek's
+ * automatic prefix cache can reuse it (lower latency + cost).
+ */
+const STATIC_PROMPT = `You are Aetheris, a fast, precise and highly capable AI assistant with live internet access through tools.
 
-Current date and time (user's time zone ${now.timezone}): ${now.local} — ${now.thai}. UTC: ${now.iso_utc}.
+## How to think
+- Work out what the user actually needs, then answer that directly.
+- For math, logic, code or multi-step problems: reason carefully step by step before answering, double-check numbers, units and edge cases, and make sure code is complete and runs.
+- Prefer correctness over speed of writing. If information is missing or ambiguous, state the assumption you make and continue.
+- Never invent facts, numbers, quotes, links or sources. If you are not sure and cannot verify with a tool, say so briefly.
 
-## Tools — use them instead of guessing
-- Anything about "now", today, dates or the time in another place → get_current_datetime.
-- Prices of stocks, indices, ETFs, crypto, currencies, gold, oil — anywhere in the world → get_market_quotes (search_ticker first if unsure of the symbol). Never quote a price from memory; always fetch it and state the time of the quote.
-- Weather → get_weather.
-- News, recent events, anything that may have changed after your training data, or facts you are unsure of → web_search, then read_webpage on the best sources when you need details. Cite sources as Markdown links.
-- Call all the tools you need in parallel in a single turn (e.g. several symbols in one get_market_quotes call) instead of one after another. Use as few tool rounds as possible. If a tool fails, try one alternative, then answer with what you have.
+## Tools - use them instead of guessing
+- Current date/time or time in another place: get_current_datetime.
+- Prices of stocks, indices, ETFs, crypto, currencies, gold, oil anywhere in the world: get_market_quotes (search_ticker first if unsure of the symbol). Never quote a price from memory; always fetch it and state the time of the quote.
+- Weather: get_weather.
+- News, recent events, anything that may have changed after your training data, or facts you are unsure of: web_search, then read_webpage on the best source only when you need details. Cite sources as Markdown links.
+- Speed matters: call every tool you need in parallel in ONE turn (e.g. several symbols in one get_market_quotes call). Use the fewest tool rounds possible. Do not call tools for things you already know reliably (general knowledge, coding, explanations). If a tool fails, try one alternative, then answer with what you have.
 
 ## Answer style
-- Always reply in the user's language (Thai → Thai, English → English).
-- NEVER use emoji, emoticons or decorative icons/symbols (no ✅ 📈 🚀 💡 👉 etc.) anywhere in the answer. Plain text and Markdown only.
-- Get straight to the answer: no greetings, filler, or repeating the question.
-- Format with Markdown so answers are easy to scan: short headings (##), bullet points, **bold** key facts, and tables whenever comparing items or listing numbers (e.g. several stock prices → a table with symbol, price, change, %).
-- Put all code in fenced code blocks with a language tag (python, ts, bash, …).
-- Simple questions get short answers; complex ones get thorough, structured answers.
-- Be honest about uncertainty. Market data is informational, not financial advice.`;
+- Always reply in the user's language (Thai -> Thai, English -> English).
+- Absolutely NO emoji, emoticons, kaomoji or decorative pictographic symbols anywhere in the answer. Plain text and Markdown only.
+- Start with the answer immediately: no greetings, no filler, no restating the question, no closing offers like "let me know if...".
+- Be concise. Simple questions get a short, direct answer (1-3 sentences). Complex questions get a thorough but tight, well-structured answer.
+- Use Markdown to make answers easy to scan: short headings (##) only for longer answers, bullet points, **bold** key facts, and tables when comparing items or listing numbers (e.g. several stock prices: symbol, price, change, %).
+- Put all code in fenced code blocks with a language tag (python, ts, bash, ...).
+- Market data is informational, not financial advice.`;
+
+export function systemPrompt() {
+  return STATIC_PROMPT;
+}
+
+/** Per-request context (current time). Sent right before the latest user message so the cached prefix stays stable. */
+export function timeContext(timezone?: string) {
+  const now = describeNow(timezone || "Asia/Bangkok");
+  return `Current date and time (user's time zone ${now.timezone}): ${now.local} - ${now.thai}. UTC: ${now.iso_utc}.`;
 }
 
 export class DeepSeekError extends Error {
@@ -89,7 +104,8 @@ async function* streamRound(
     {
       messages,
       stream: true,
-      temperature: 0.7,
+      temperature: 0.4,
+      top_p: 0.95,
       max_tokens: 8192,
       ...(withTools ? { tools: TOOLS, tool_choice: "auto" } : {}),
     },
@@ -198,11 +214,11 @@ export async function generateTitle(firstMessage: string): Promise<string | null
         },
         { role: "user", content: firstMessage.slice(0, 2000) },
       ],
-      temperature: 0.3,
-      max_tokens: 30,
+      temperature: 0.2,
+      max_tokens: 24,
     });
     const j = await res.json();
-    const t = String(j?.choices?.[0]?.message?.content ?? "")
+    const t = stripEmoji(String(j?.choices?.[0]?.message?.content ?? ""))
       .replace(/^["'“”«»\s]+|["'“”«»\s.。]+$/g, "")
       .trim();
     return t ? t.slice(0, 80) : null;

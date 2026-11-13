@@ -12,14 +12,15 @@ const thai = IBM_Plex_Sans_Thai({
 const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
 
 export const metadata: Metadata = {
-  title: "Aetheris — AI Assistant",
+  title: "Aetheris - AI Assistant",
   description: "Aetheris คือผู้ช่วย AI อัจฉริยะ พูดคุย ถามตอบ เขียนโค้ด และช่วยงานได้ทุกเรื่อง",
-  icons: { icon: "/favicon.svg", apple: "/aetheris-logo.png" },
-  openGraph: { title: "Aetheris", description: "Your intelligent AI assistant", images: ["/aetheris-logo.png"] },
+  icons: { icon: "/favicon.svg", apple: "/apple-icon.png" },
+  openGraph: { title: "Aetheris", description: "Your intelligent AI assistant", images: ["/apple-icon.png"] },
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0b0b0d",
+  themeColor: "#070708",
+  colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
   interactiveWidget: "resizes-content",
@@ -27,7 +28,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="th" className={`${inter.variable} ${thai.variable} ${mono.variable}`}>
+    <html lang="th" style={{ colorScheme: "dark" }} className={`${inter.variable} ${thai.variable} ${mono.variable}`}>
       <body>{children}</body>
     </html>
   );

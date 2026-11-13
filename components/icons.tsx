@@ -138,3 +138,24 @@ export const IconCloud = (p: P) => (
     <path d="M7 18a4.5 4.5 0 1 1 .9-8.9A6 6 0 0 1 19 11a3.5 3.5 0 0 1-.5 7Z" />
   </svg>
 );
+
+/** Aetheris brand mark: a four-point star with an orbit, on a dark tile. */
+export const AetherisLogo = ({ size = 28, className, ...p }: SVGProps<SVGSVGElement> & { size?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden className={className} {...p}>
+    <defs>
+      <linearGradient id="ae-tile" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#26262b" />
+        <stop offset="1" stopColor="#0c0c0e" />
+      </linearGradient>
+      <linearGradient id="ae-star" x1="16" y1="12" x2="48" y2="52" gradientUnits="userSpaceOnUse">
+        <stop stopColor="#ffffff" />
+        <stop offset="1" stopColor="#a1a1aa" />
+      </linearGradient>
+    </defs>
+    <rect width="64" height="64" rx="16" fill="url(#ae-tile)" />
+    <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="15.25" stroke="#ffffff" strokeOpacity="0.1" strokeWidth="1.5" />
+    <ellipse cx="32" cy="32" rx="22" ry="8.5" transform="rotate(-30 32 32)" stroke="#ffffff" strokeOpacity="0.28" strokeWidth="1.6" />
+    <path d="M32 11c1.6 11.2 5.8 15.4 17 17-11.2 1.6-15.4 5.8-17 17-1.6-11.2-5.8-15.4-17-17 11.2-1.6 15.4-5.8 17-17Z" fill="url(#ae-star)" />
+    <circle cx="50.5" cy="21.3" r="2.4" fill="#ffffff" />
+  </svg>
+);

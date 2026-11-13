@@ -4,6 +4,7 @@ import { memo, useEffect, useRef, useState } from "react";
 import Markdown from "./Markdown";
 import { useSmoothText } from "./useSmoothText";
 import {
+  AetherisLogo,
   IconChart,
   IconCheck,
   IconClock,
@@ -192,8 +193,8 @@ function AssistantMessage({ message, isLast, busy, onRegenerate }: Omit<Props, "
   const revealing = smooth.animating && !message.error;
   return (
     <div className="group flex animate-fade-in gap-4">
-      <div className="mt-0.5 hidden size-8 shrink-0 overflow-hidden rounded-full ring-1 ring-line sm:block">
-        <img src="/aetheris-logo.png" alt="" className="size-full scale-110 object-cover" />
+      <div className="mt-0.5 hidden shrink-0 sm:block">
+        <AetherisLogo size={32} />
       </div>
       <div className="min-w-0 flex-1">
         {message.tools && message.tools.length > 0 && (

@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Conversation } from "@/lib/types";
+import { stripEmoji } from "@/lib/text";
 import {
+  AetherisLogo,
   IconCompose,
   IconDatabase,
   IconDots,
@@ -106,7 +108,7 @@ function Item({
           active ? "bg-hover text-fg" : "text-muted hover:bg-white/[0.04] hover:text-fg"
         }`}
       >
-        <span className="truncate">{c.title}</span>
+        <span className="truncate">{stripEmoji(c.title)}</span>
       </button>
       <button
         onClick={(e) => {
@@ -184,7 +186,7 @@ export default function Sidebar(props: Props) {
         {/* Header */}
         <div className="flex h-14 items-center justify-between px-3">
           <button onClick={props.onNew} className="flex items-center gap-2.5 rounded-lg px-1.5 py-1 transition hover:opacity-90">
-            <img src="/aetheris-logo.png" alt="Aetheris" className="size-7 rounded-lg" />
+            <AetherisLogo size={28} />
             <span className="text-[17px] font-semibold tracking-tight">Aetheris</span>
           </button>
           <button
@@ -209,7 +211,7 @@ export default function Sidebar(props: Props) {
           >
             <IconCompose size={17} />
             <span className="flex-1 text-left">แชทใหม่</span>
-            <kbd className="hidden font-sans text-[11px] text-subtle md:inline">Ctrl ⇧ O</kbd>
+            <kbd className="hidden font-sans text-[11px] text-subtle md:inline">Ctrl Shift O</kbd>
           </button>
           <label className="flex items-center gap-3 rounded-lg px-2.5 py-2 text-sm text-muted transition focus-within:bg-white/[0.05] hover:bg-white/[0.05]">
             <IconSearch size={17} />
@@ -258,7 +260,7 @@ export default function Sidebar(props: Props) {
         {/* Footer */}
         <div className="border-t border-line p-2">
           <div className="flex items-center gap-3 rounded-lg px-2.5 py-2">
-            <div className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-accent to-accent-2 text-white">
+            <div className="grid size-8 place-items-center rounded-full bg-elevated text-fg ring-1 ring-line-strong">
               <IconUser size={16} />
             </div>
             <div className="min-w-0 flex-1">
