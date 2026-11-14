@@ -1,6 +1,6 @@
 "use client";
 
-import { IconChart, IconClock, IconCode, IconGlobe } from "./icons";
+import { AetherisLogo, IconChart, IconClock, IconCode, IconGlobe } from "./icons";
 
 const SUGGESTIONS = [
   { icon: IconChart, title: "ราคาหุ้นเรียลไทม์", text: "ราคาหุ้น NVDA, AAPL, PTT.BK และ Bitcoin ตอนนี้เท่าไหร่ สรุปเป็นตาราง" },
@@ -20,8 +20,8 @@ export default function Welcome({ onPick }: { onPick: (text: string) => void }) 
   return (
     <div className="flex animate-fade-in flex-col items-center text-center">
       <div className="relative mb-6">
-        <div className="absolute inset-0 -z-10 scale-150 rounded-full bg-accent/20 blur-3xl" />
-        <img src="/aetheris-logo.png" alt="Aetheris" className="logo-glow size-16 rounded-2xl" />
+        <div className="absolute inset-0 -z-10 scale-150 rounded-full bg-white/[0.06] blur-3xl" />
+        <AetherisLogo size={64} className="logo-glow" />
       </div>
       <p className="mb-1 text-sm font-medium text-muted" suppressHydrationWarning>
         {greeting()}

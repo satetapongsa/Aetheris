@@ -13,6 +13,7 @@ import {
   isAIConfigured,
   runAgent,
   systemPrompt,
+  timeContext,
   type AgentEvent,
   type ChatMessage,
 } from "@/lib/deepseek";
@@ -156,7 +157,12 @@ export async function POST(req: NextRequest) {
   });
 }
 
-/** System prompt + as much recent history as fits in the context budget. */
+/**
+ * Static system prompt + as much recent history as fits in the context budget.
+ * The time-dependent context goes just before the latest user message so the
+ * prefix (system prompt + earlier turns) is identical across requests and hits
+ * DeepSeek's prompt cache, which cuts time-to-first-token.
+ */
 function buildContext(messages: { role: string; content: string }[], timezone?: string): ChatMessage[] {
   const out: ChatMessage[] = [];
   let budget = MAX_CONTEXT_CHARS;
@@ -167,5 +173,9 @@ function buildContext(messages: { role: string; content: string }[], timezone?: 
     if (budget < 0 && out.length > 0) break;
     out.unshift({ role: m.role, content: m.content });
   }
-  return [{ role: "system", content: systemPrompt(timezone) }, ...out];
+  const time: ChatMessage = { role: "system", content: timeContext(timezone) };
+  const lastUser = out.map((m) => m.role).lastIndexOf("user");
+  if (lastUser >= 0) out.splice(lastUser, 0, time);
+  else out.push(time);
+  return [{ role: "system", content: systemPrompt() }, ...out];
 }

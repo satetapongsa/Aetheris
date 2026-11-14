@@ -22,7 +22,7 @@ function CodeBlock(props: ComponentProps<"pre">) {
   };
 
   return (
-    <div className="group/code my-4 overflow-hidden rounded-xl border border-line bg-[#0d0d10]">
+    <div className="group/code my-4 overflow-hidden rounded-xl border border-line bg-[#0a0a0c]">
       <div className="flex items-center justify-between border-b border-line bg-white/[0.02] px-4 py-2 text-xs text-subtle">
         <span className="font-mono lowercase">{lang}</span>
         <button
